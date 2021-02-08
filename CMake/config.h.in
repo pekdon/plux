@@ -1,0 +1,10 @@
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+#cmakedefine HAVE_PTY_H
+#cmakedefine HAVE_UTIL_H
+#cmakedefine HAVE_TERMIOS_H
+#cmakedefine HAVE_TIMESPECCMP
+#cmakedefine HAVE_TIMESPECSUB
+
+#endif // _CONFIG_H_

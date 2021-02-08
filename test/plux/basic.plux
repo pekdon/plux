@@ -1,0 +1,17 @@
+[doc]
+Basic PLUX script, smoke test
+[enddoc]
+
+[config require=HOME]
+
+[shell test]
+    # test match on standard output
+    ?SH-PROMPT:
+    !echo "true"
+    ?true
+    ?SH-PROMPT:
+
+[cleanup]
+    ?SH-PROMPT:
+    !ls
+    ?SH-PROMPT:

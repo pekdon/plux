@@ -1,0 +1,6 @@
+[function shell-ok]
+    ?SH-PROMPT:
+    !echo $$?
+    ?^0$
+    ?SH-PROMPT:
+[endfunction]

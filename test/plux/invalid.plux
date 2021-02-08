@@ -1,0 +1,5 @@
+[doc]
+Script with invalid content, cause parse error.
+[enddoc]
+
+[shell invalid/name]

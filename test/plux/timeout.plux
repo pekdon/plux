@@ -1,0 +1,9 @@
+[doc]
+Script that times out.
+[enddoc]
+
+[shell test]
+    ?SH-PROMPT:
+    [timeout 2]
+    !sleep 5
+    ?SH-PROMPT:

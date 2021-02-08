@@ -1,0 +1,43 @@
+[doc]
+Test use of variables.
+
+Test use of OS variables, global, local and regex match variables.
+[enddoc]
+
+[global glob1=TEST1]
+
+[shell sh1]
+    ?SH-PROMPT:
+    !echo "==$glob1=="
+    ?==TEST1==
+    ?SH-PROMPT:
+
+[shell sh2]
+    ?SH-PROMPT:
+    !echo "==$glob1=="
+    ?==TEST1==
+    ?SH-PROMPT:
+
+[shell sh1]
+    [global glob2=TEST2]
+
+[shell sh2]
+    !echo "==$glob2=="
+    ?==TEST2==
+    ?SH-PROMPT:
+
+[shell sh1]
+    [local loc=SHELL1]
+
+[shell sh2]
+    [local loc=SHELL2]
+
+[shell sh1]
+    !echo "==$loc=="
+    ?==SHELL1==
+    ?SH-PROMPT:
+
+[shell sh2]
+    !echo "==$loc=="
+    ?==SHELL2==
+    ?SH-PROMPT:

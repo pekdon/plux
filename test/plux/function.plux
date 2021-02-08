@@ -1,0 +1,34 @@
+[doc]
+Test function calls.
+[enddoc]
+
+[function no-args]
+    [log no-args]
+    !echo "no args"
+    ?no args
+    ?SH-PROMPT:
+[endfunction]
+
+[function args key val]
+    [log args $key $val]
+    !echo "$key=$val"
+    ?(var|direct|nested)=val
+    ?SH-PROMPT:
+[endfunction]
+
+[function nested]
+    [log nested]
+    [call no-args]
+    [call args nested val]
+[endfunction]
+
+[shell sh1]
+    [local fun=args]
+    [local arg1=var]
+    [local arg2=val]
+
+    [call no-args]
+    [call args direct val]
+    [call nested]
+
+    [call $fun $arg1 $arg2]

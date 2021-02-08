@@ -1,0 +1,29 @@
+[doc]
+Test error pattern.
+[enddoc]
+
+[shell sh1]
+    -sh1
+    ?SH-PROMPT:
+
+[shell sh2]
+    -sh2
+    ?SH-PROMPT:
+
+[shell sh1]
+    # will work, ensure that error pattern is shell local
+    !echo sh2
+    ?sh2
+    ?SH-PROMPT:
+
+[shell sh2]
+    # will work, ensure that error pattern is shell local
+    !echo sh1
+    ?sh1
+    ?SH-PROMPT:
+
+[shell sh1]
+    # error pattern will happen here
+    !echo sh1
+    ?sh1
+    ?SH-PROMPT:
