@@ -17,6 +17,13 @@ PLUX is line based
 PLUX operate on a line-by-line basis and as such **^** and **$**
 regular expression markers actually mean the start and end of a line.
 
+PLUX skip output when entering command
+--------------------------------------
+
+PLUX treat the lines that send output to the shell as matched so
+there is no risk for accidentaly matching output that was entered
+on the command line.
+
 PLUX match error pattern continously
 ------------------------------------
 
