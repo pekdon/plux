@@ -149,8 +149,12 @@ namespace plux {
     Line* ScriptParse::parse_line_cmd(const ScriptParseCtx& ctx)
     {
         if (ctx.starts_with("!")) {
-            return new LineOutput(_path, _linenumber, ctx.shell,
-                                  ctx.substr(1, 0) + "\n");
+            auto output = ctx.substr(1, 0);
+            // FIXME: add list of control characters
+            if (output != "$_CTRL_C_") {
+                output += "\n";
+            }
+            return new LineOutput(_path, _linenumber, ctx.shell, output);
         } else if (ctx.starts_with("?")) {
             auto match_start = ctx.line.find_first_not_of("?", ctx.start);
             if ((match_start - ctx.start) == 1) {
