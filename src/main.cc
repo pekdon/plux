@@ -54,7 +54,8 @@ static int dump_script(plux::Script* script)
     return 0;
 }
 
-static int run_script(plux::Script* script, enum plux::log_level log_level)
+static int run_script(plux::Script* script, enum plux::log_level log_level,
+                      bool tail)
 {
     int exitcode = 1;
     plux::LogFile log(log_level, "plux.log");
@@ -62,7 +63,7 @@ static int run_script(plux::Script* script, enum plux::log_level log_level)
 
     plux::env_map env;
     fill_os_env(env);
-    auto run = plux::ScriptRun(log, progress_log, env, script);
+    auto run = plux::ScriptRun(log, progress_log, env, script, tail);
     std::cout << "Running " << script->file() << "..." << std::endl;
     auto res = run.run();
     if (res.status() == plux::RES_OK) {
@@ -91,14 +92,17 @@ int main(int argc, char *argv[])
     struct option longopts[] = {
         {"dump", no_argument, NULL, 'd'},
         {"help", no_argument, NULL, 'h'},
-        {"log-level", required_argument, NULL, 'l'}
+        {"log-level", required_argument, NULL, 'l'},
+        {"tail", no_argument, NULL, 't'},
+        NULL
     };
 
     bool opt_dump = false;
+    bool opt_tail = false;
     enum plux::log_level opt_log_level = plux::LOG_LEVEL_INFO;
 
     int ch;
-    while ((ch = getopt_long(argc, argv, "dhl:", longopts, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "dhl:t", longopts, NULL)) != -1) {
         switch (ch) {
         case 'd':
             opt_dump = true;
@@ -111,6 +115,9 @@ int main(int argc, char *argv[])
             if (opt_log_level == plux::LOG_LEVEL_NO) {
                 return usage(name);
             }
+            break;
+        case 't':
+            opt_tail = true;
             break;
         }
     }
@@ -139,7 +146,7 @@ int main(int argc, char *argv[])
         if (opt_dump) {
             exitcode = dump_script(script.get());
         } else {
-            exitcode = run_script(script.get(), opt_log_level);
+            exitcode = run_script(script.get(), opt_log_level, opt_tail);
         }
     } catch (plux::ScriptParseError ex) {
         std::cerr << "parsing of " << ex.path() << " failed at line "

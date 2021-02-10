@@ -1,11 +1,16 @@
 #include "shell_log.hh"
 
+#include <iostream>
+
 namespace plux {
     /**
      * Create file based output log for shells, opens input and output
      * log for writing.
      */
-    FileShellLog::FileShellLog(const std::string& path)
+    FileShellLog::FileShellLog(const std::string& path, const std::string& shell,
+                               bool tail)
+        : _shell(shell),
+          _tail(tail)
     {
         _input.open(path + "_input.log");
         _output.open(path + "_output.log");
@@ -25,6 +30,9 @@ namespace plux {
      */
     void FileShellLog::input(const std::string& data)
     {
+        if (_tail) {
+            std::cerr << "[" << _shell << "] " << data;
+        }
         _input << data;
         _input.flush();
     }

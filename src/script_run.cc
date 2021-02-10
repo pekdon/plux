@@ -120,8 +120,9 @@ namespace plux {
      * used for shells.
      */
     ScriptRun::ScriptRun(Log& log, ProgressLog& progress_log,
-                         const env_map& env, const Script* script)
-        : _log(log),
+                         const env_map& env, const Script* script, bool tail)
+        : _tail(tail),
+          _log(log),
           _progress_log(progress_log),
           _timeout(default_timeout_ms),
           _env(env),
@@ -343,7 +344,7 @@ namespace plux {
     ShellLog* ScriptRun::init_shell_log(const std::string& name)
     {
         auto path = _cfg.log_dir() + "/" + name;
-        _shell_logs.push_back(new FileShellLog(path));
+        _shell_logs.push_back(new FileShellLog(path, name, _tail));
         return _shell_logs.back();
     }
 

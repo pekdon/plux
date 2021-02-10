@@ -140,7 +140,7 @@ namespace plux {
     class ScriptRun {
     public:
         ScriptRun(Log& log, ProgressLog& progress_log, const env_map& env,
-                  const Script* script);
+                  const Script* script, bool tail);
         ~ScriptRun();
 
         ScriptResult run();
@@ -167,6 +167,8 @@ namespace plux {
                                   const std::string& info);
 
     private:
+        /** If set to true, tail shell output */
+        bool _tail;
         /** Configuratoin */
         Cfg _cfg;
         /** Applicaition log. */

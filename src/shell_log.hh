@@ -23,13 +23,17 @@ namespace plux {
      */
     class FileShellLog : public ShellLog {
     public:
-        FileShellLog(const std::string& path);
+        FileShellLog(const std::string& path, const std::string& shell,
+                     bool tail);
         virtual ~FileShellLog();
 
         virtual void input(const std::string& data);
         virtual void output(const char* data, ssize_t size);
 
     private:
+        std::string _shell;
+        bool _tail;
+
         std::ofstream _input;
         std::ofstream _output;
     };
