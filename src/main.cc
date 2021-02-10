@@ -33,7 +33,7 @@ static void dump_lines(plux::line_it it, plux::line_it end)
 {
     for (; it != end; ++it) {
         std::cout << (*it)->file() << ":" << (*it)->line() << " "
-                  << (*it)->to_string() << std::endl;
+                  << (*it)->shell() << " " << (*it)->to_string() << std::endl;
     }
 }
 
