@@ -17,6 +17,7 @@ endif (HAS_CXX11)
 
 check_include_file(pty.h HAVE_PTY_H)
 check_include_file(util.h HAVE_UTIL_H)
+check_include_file(libutil.h HAVE_LIBUTIL_H)
 check_include_file(termios.h HAVE_TERMIOS_H)
 
 find_library(LIBUTIL util)

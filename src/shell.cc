@@ -5,6 +5,8 @@
 
 extern "C" {
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -14,6 +16,9 @@ extern "C" {
 #ifdef HAVE_UTIL_H
 #include <util.h>
 #endif // HAVE_UTIL_H
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
+#endif // HAVE_LIBUTIL_H
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif // HAVE_TERMIOS_H
