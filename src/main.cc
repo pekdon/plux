@@ -6,6 +6,7 @@
 
 extern "C" {
 #include <getopt.h>
+#include <glob.h>
 }
 
 extern char **environ;
@@ -85,6 +86,36 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
     return exitcode;
 }
 
+static int run_file(int opt_dump, enum plux::log_level opt_log_level,
+                    bool opt_tail, std::string file)
+{
+    std::filebuf fb;
+    if (! fb.open(file, std::ios::in)) {
+        std::cerr << "failed to open: " << file << std::endl;
+        return 1;
+    }
+
+    int exitcode = 1;
+    std::istream is(&fb);
+    try {
+        plux::ScriptParse script_parse(file, &is);
+        auto script = script_parse.parse();
+
+        if (opt_dump) {
+            exitcode = dump_script(script.get());
+        } else {
+            exitcode = run_script(script.get(), opt_log_level, opt_tail);
+        }
+    } catch (plux::ScriptParseError ex) {
+        std::cerr << "parsing of " << ex.path() << " failed at line "
+                  << ex.linenumber() << std::endl
+                  << "error: " << ex.error() << std::endl
+                  << "content: " << ex.line() << std::endl;
+    }
+
+    return exitcode;
+}
+
 int main(int argc, char *argv[])
 {
     const char* name = argv[0];
@@ -124,35 +155,29 @@ int main(int argc, char *argv[])
     argc -= optind;
     argv += optind;
 
-    if (argc != 1) {
+    if (argc < 1) {
         return usage(name);
     }
 
-    // FIXME: setup SIGCHLD, SIGPIPE
+    // FIXME: setup SIGCHLD, SIGPIPE, SIGINT
 
-    std::string file(argv[0]);
-    std::filebuf fb;
-    if (! fb.open(file, std::ios::in)) {
-        std::cerr << "failed to open: " << file << std::endl;
-        return 1;
-    }
-
-    int exitcode = 1;
-    std::istream is(&fb);
-    try {
-        plux::ScriptParse script_parse(file, &is);
-        auto script = script_parse.parse();
-
-        if (opt_dump) {
-            exitcode = dump_script(script.get());
+    int exitcode = 0;
+    for (int i = 0; i < argc; i++) {
+        glob_t pglob = {0};
+        if (glob(argv[i], 0, NULL, &pglob)) {
+            std::cerr << "glob " << argv[i] << " failed: " << strerror(errno)
+                      << std::endl;
         } else {
-            exitcode = run_script(script.get(), opt_log_level, opt_tail);
+            for (int j = 0; j < pglob.gl_pathc; j++) {
+                int file_exit_code = run_file(opt_dump, opt_log_level,
+                                              opt_tail, pglob.gl_pathv[j]);
+                if (! exitcode && file_exit_code) {
+                    exitcode = file_exit_code;
+                }
+            }
+            globfree(&pglob);
         }
-    } catch (plux::ScriptParseError ex) {
-        std::cerr << "parsing of " << ex.path() << " failed at line "
-                  << ex.linenumber() << std::endl
-                  << "error: " << ex.error() << std::endl
-                  << "content: " << ex.line() << std::endl;
     }
+
     return exitcode;
 }
