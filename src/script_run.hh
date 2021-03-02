@@ -144,6 +144,7 @@ namespace plux {
         ~ScriptRun();
 
         ScriptResult run();
+        void stop();
 
     protected:
         ScriptResult run_headers(line_it it, line_it end);
@@ -176,6 +177,8 @@ namespace plux {
         /** Progress log. */
         ProgressLog& _progress_log;
 
+        /** Stop "signal" */
+        bool _stop;
         /** Map from shell name to Shell */
         std::map<std::string, Shell*> _shells;
         /** Vector with all open Shell logs. */

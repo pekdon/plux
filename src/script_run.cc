@@ -124,6 +124,7 @@ namespace plux {
         : _tail(tail),
           _log(log),
           _progress_log(progress_log),
+          _stop(false),
           _timeout(default_timeout_ms),
           _env(env),
           _script(script)
@@ -135,6 +136,8 @@ namespace plux {
      */
     ScriptRun::~ScriptRun()
     {
+        stop();
+
         for (auto it : _shells) {
             delete it.second;
         }
@@ -154,6 +157,19 @@ namespace plux {
             run_lines(_script->cleanup_begin(), _script->cleanup_end());
         }
         return res;
+    }
+
+    /**
+     * Set stop signal on script.
+     */
+    void ScriptRun::stop()
+    {
+        if (! _stop) {
+            for (auto it : _shells) {
+                it.second->stop();
+            }
+            _stop = true;
+        }
     }
 
     /**
@@ -199,6 +215,10 @@ namespace plux {
      */
     LineRes ScriptRun::run_line(Line* line)
     {
+        if (_stop) {
+            throw ScriptException("stopped");
+        }
+
         auto shell_name = this->shell_name(line);
         _log << "ScriptRun" << "run_line " << shell_name << " "
              << line->to_string() << LOG_LEVEL_DEBUG;

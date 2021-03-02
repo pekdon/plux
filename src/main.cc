@@ -7,9 +7,20 @@
 extern "C" {
 #include <getopt.h>
 #include <glob.h>
+#include <signal.h>
 }
 
 extern char **environ;
+
+static void signal_handler(int signal)
+{
+    switch (signal) {
+    case SIGHUP:
+    case SIGINT:
+    case SIGTERM:
+        break;
+    }
+}
 
 static void fill_os_env(plux::env_map& env)
 {
@@ -159,7 +170,13 @@ int main(int argc, char *argv[])
         return usage(name);
     }
 
-    // FIXME: setup SIGCHLD, SIGPIPE, SIGINT
+    struct sigaction act;
+    act.sa_handler = signal_handler;
+    act.sa_mask = sigset_t();
+    act.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
+    sigaction(SIGHUP, &act, 0);
+    sigaction(SIGTERM, &act, 0);
+    sigaction(SIGINT, &act, 0);
 
     int exitcode = 0;
     for (int i = 0; i < argc; i++) {

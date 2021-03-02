@@ -51,6 +51,8 @@ namespace plux {
               ShellEnv& shell_env);
         virtual ~Shell();
 
+        void stop();
+
         virtual const std::string& name() const override { return _name; }
 
         const std::string& error_pattern() const { return _error_pattern; }

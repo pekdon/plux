@@ -80,8 +80,27 @@ namespace plux {
 
     Shell::~Shell()
     {
+        stop();
         kill(_pid, SIGKILL);
-        close(_fd);
+        int status;
+        _log.trace("shell", "waiting for pid " + std::to_string(static_cast<int>(_pid))
+                   + " to finish");
+        waitpid(_pid, &status, 0);
+        _log.trace("shell", "pid " + std::to_string(static_cast<int>(_pid))
+                   + " finished with " + std::to_string(WEXITSTATUS(status)));
+    }
+
+    void Shell::stop()
+    {
+        if (_fd != -1) {
+            // Ctrl-C (signal ongoing command)
+            write(_fd, "\003", 1);
+            // Ctrl-D (try to exit the shell)
+            write(_fd, "\004", 1);
+            // Close and then kill with signal
+            close(_fd);
+            _fd = -1;
+        }
     }
 
     /**
