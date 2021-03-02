@@ -16,6 +16,9 @@ namespace plux {
     ScriptEnv::ScriptEnv(const env_map& os_env)
         : _os_env(os_env)
     {
+        // override local shell settings, could render PS1 setting inactive
+        _os_env["ENV"] = "/dev/null";
+        // set PS1, used in scripts to match the prompt in a consistent manner
         _os_env["PS1"] = "SH-PROMPT:";
     }
 
