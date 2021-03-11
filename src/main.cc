@@ -88,7 +88,8 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
             std::cout << "Error ";
         }
         std::cout << res.error() << std::endl
-                  << res.file() << ":" << res.linenumber() << std::endl;
+                  << res.file() << ":" << res.linenumber()
+                  << " " << res.error() << std::endl;
         auto it = res.stack_begin();
         for (; it != res.stack_end(); ++it) {
             std::cout << *it << std::endl;

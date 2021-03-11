@@ -149,8 +149,8 @@ namespace plux {
     protected:
         ScriptResult run_headers(line_it it, line_it end);
         ScriptResult run_lines(line_it it, line_it end);
-        LineRes run_line(Line* line);
-        LineRes run_function(Function* fun, const std::string& shell,
+        ScriptResult run_line(Line* line);
+        ScriptResult run_function(Function* fun, const std::string& shell,
                              LineRes::arg_it arg_begin,
                              LineRes::arg_it arg_end);
         enum line_status wait_for_input(int timeout_ms);
@@ -165,7 +165,7 @@ namespace plux {
         void pop_function(Function* fun, const std::string& shell);
 
         ScriptResult script_error(LineRes res, const Line* line,
-                                  const std::string& info);
+                                  std::string info);
 
     private:
         /** If set to true, tail shell output */

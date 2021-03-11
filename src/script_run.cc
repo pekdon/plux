@@ -183,9 +183,9 @@ namespace plux {
     {
         for (; it != end; ++it) {
             try {
-                auto lres = run_line(*it);
-                if (lres != RES_OK) {
-                    return script_error(lres, *it, plux::empty_string);
+                auto res = run_line(*it);
+                if (res.status() != RES_OK) {
+                    return res;
                 }
             } catch (const PluxException& ex) {
                 return script_error(RES_ERROR, *it, ex.info());
@@ -201,9 +201,9 @@ namespace plux {
     {
         for (; it != end; ++it) {
             try {
-                auto lres = run_line(*it);
-                if (lres != RES_OK) {
-                    return script_error(lres, *it, plux::empty_string);
+                auto res = run_line(*it);
+                if (res.status() != RES_OK) {
+                    return res;
                 }
             } catch (const PluxException& ex) {
                 return script_error(RES_ERROR, *it, ex.info());
@@ -216,7 +216,7 @@ namespace plux {
      * Run single script line with timeout, including waiting for more
      * input data.
      */
-    LineRes ScriptRun::run_line(Line* line)
+    ScriptResult ScriptRun::run_line(Line* line)
     {
         if (_stop) {
             throw ScriptException("stopped");
@@ -230,36 +230,39 @@ namespace plux {
         _timeout.set_timeout_ms(shell->timeout());
         _timeout.restart();
 
-        LineRes res(RES_OK);
-        res = line->run(*shell, _env);
-        while (res == RES_NO_MATCH) {
+        LineRes lres(RES_OK);
+        lres = line->run(*shell, _env);
+        while (lres == RES_NO_MATCH) {
             int timeout_ms = _timeout.get_ms_until_timeout();
             if (timeout_ms == 0) {
-                res = RES_TIMEOUT;
+                lres = RES_TIMEOUT;
             } else {
-                res = wait_for_input(timeout_ms);
-                if (res == RES_OK) {
-                    res = line->run(*shell, _env);
+                lres = wait_for_input(timeout_ms);
+                if (lres == RES_OK) {
+                    lres = line->run(*shell, _env);
                 }
             }
         }
 
-        if (res == RES_CALL) {
-            auto fun = _script->get_fun(res.fun());
+        if (lres == RES_CALL) {
+            auto fun = _script->get_fun(lres.fun());
             if (fun == nullptr) {
                 throw UndefinedException(shell_name, "function",
-                                         res.fun());
+                                         lres.fun());
             }
-            res = run_function(fun, shell_name,
-                               res.arg_begin(), res.arg_end());
+            return run_function(fun, shell_name,
+                                lres.arg_begin(), lres.arg_end());
+        } else if (lres != RES_OK) {
+            return script_error(lres, line, plux::empty_string);
+        } else {
+            return ScriptResult();
         }
-
-        return res;
     }
 
-    LineRes ScriptRun::run_function(Function* fun, const std::string& shell,
-                                    LineRes::arg_it arg_begin,
-                                    LineRes::arg_it arg_end)
+    ScriptResult ScriptRun::run_function(Function* fun,
+                                         const std::string& shell,
+                                         LineRes::arg_it arg_begin,
+                                         LineRes::arg_it arg_end)
     {
         _log << "ScriptRun" << "run_function " << fun->name() << " ("
              << fun->num_args() << ")" << LOG_LEVEL_TRACE;
@@ -280,18 +283,17 @@ namespace plux {
             _env.set_env("", *arg_name_it, VAR_SCOPE_FUNCTION, *arg_val_it);
         }
 
-        auto res = LineRes(RES_OK);
         auto it = fun->line_begin();
         for (; it != fun->line_end(); ++it) {
-            res = run_line(*it);
-            if (res != RES_OK) {
-                break;
+            auto res = run_line(*it);
+            if (res.status() != RES_OK) {
+                return res;
             }
         }
 
         pop_function(fun, shell);
 
-        return res;
+        return ScriptResult();
     }
 
     /**
@@ -401,8 +403,12 @@ namespace plux {
      * including function call stack.
      */
     ScriptResult ScriptRun::script_error(LineRes res, const Line* line,
-                                         const std::string& info)
+                                         std::string info)
     {
+        if (info.empty()) {
+            info = line->to_string();
+        }
+
         std::vector<std::string> stack;
         for (auto it : _fun_ctx) {
             auto fun = _script->get_fun(it.name());
