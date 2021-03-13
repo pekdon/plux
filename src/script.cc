@@ -287,6 +287,15 @@ namespace plux {
     Script::Script(const std::string& file)
         : _file(file)
     {
+        auto start = file.find_last_of("/");
+        if (start == std::string::npos) {
+            start = 0;
+        }
+        auto end = file.find_last_of(".");
+        if (end == std::string::npos) {
+            end = file.size();
+        }
+        _name = file.substr(start, end - start);
     }
 
     Script::~Script()

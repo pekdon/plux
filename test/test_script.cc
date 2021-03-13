@@ -41,7 +41,9 @@ public:
     virtual line_it line_end() const override { return _lines.end(); }
     virtual void line_consume_until(line_it it) override { }
 
-    virtual const std::string& buf() const override { return plux::empty_string; }
+    virtual const std::string& buf() const override {
+        return plux::empty_string;
+    }
     virtual void consume_buf() override { }
 
 private:

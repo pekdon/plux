@@ -510,6 +510,7 @@ namespace plux {
         ~Script();
 
         const std::string& file() const { return _file; }
+        const std::string& name() const { return _name; }
         const std::string& doc() const { return _doc; }
         void set_doc(const std::string& doc) { _doc = doc; }
 
@@ -539,7 +540,8 @@ namespace plux {
     private:
         /** starting point for file. */
         std::string _file;
-
+        /** name of the script (basename - .plux ending) */
+        std::string _name;
         /** script documentation header */
         std::string _doc;
 

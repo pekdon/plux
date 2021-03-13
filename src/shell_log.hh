@@ -49,8 +49,10 @@ namespace plux {
         virtual ~ProgressLog() { }
 
         virtual void log(const std::string& shell, const std::string& msg) = 0;
-        virtual void progress_start(const std::string& shell, const std::string& msg) = 0;
-        virtual void progress_stop(const std::string& shell, const std::string& msg) = 0;
+        virtual void progress_start(const std::string& shell,
+                                    const std::string& msg) = 0;
+        virtual void progress_stop(const std::string& shell,
+                                   const std::string& msg) = 0;
     };
 
     /**
@@ -63,8 +65,10 @@ namespace plux {
         virtual ~FileProgressLog();
 
         virtual void log(const std::string& shell, const std::string& msg);
-        virtual void progress_start(const std::string& shell, const std::string& msg);
-        virtual void progress_stop(const std::string& shell, const std::string& msg);
+        virtual void progress_start(const std::string& shell,
+                                    const std::string& msg);
+        virtual void progress_stop(const std::string& shell,
+                                   const std::string& msg);
     };
 
 }

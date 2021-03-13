@@ -368,7 +368,7 @@ namespace plux {
 
     ShellLog* ScriptRun::init_shell_log(const std::string& name)
     {
-        auto path = _cfg.log_dir() + "/" + name;
+        auto path = _cfg.log_dir() + "/" + _script->name() + "_" + name;
         _shell_logs.push_back(new FileShellLog(path, name, _tail));
         return _shell_logs.back();
     }
