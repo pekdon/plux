@@ -96,7 +96,7 @@ namespace plux {
     class ShellCtx {
     public:
         typedef std::vector<std::string> line_vector;
-        typedef line_vector::const_iterator line_it;
+        typedef line_vector::iterator line_it;
 
         ShellCtx() { }
         virtual ~ShellCtx() { }
@@ -113,8 +113,8 @@ namespace plux {
         virtual bool input(const std::string& data) = 0;
         virtual void output(const char* data, ssize_t size) = 0;
 
-        virtual line_it line_begin() const = 0;
-        virtual line_it line_end() const = 0;
+        virtual line_it line_begin() = 0;
+        virtual line_it line_end() = 0;
         virtual void line_consume_until(line_it it) = 0;
 
         virtual const std::string& buf() const = 0;

@@ -37,8 +37,8 @@ public:
     }
     virtual void output(const char* data, ssize_t size) override { }
 
-    virtual line_it line_begin() const override { return _lines.begin(); }
-    virtual line_it line_end() const override { return _lines.end(); }
+    virtual line_it line_begin() override { return _lines.begin(); }
+    virtual line_it line_end() override { return _lines.end(); }
     virtual void line_consume_until(line_it it) override { }
 
     virtual const std::string& buf() const override {

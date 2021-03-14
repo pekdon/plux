@@ -54,7 +54,7 @@ namespace plux {
         std::ostringstream& msg_buf() { return _msg_buf; }
         void msg_clear() {
             _msg_src = std::string();
-            _msg_buf = std::ostringstream();
+            _msg_buf.str("");
         }
 
     protected:

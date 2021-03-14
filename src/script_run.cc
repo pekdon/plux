@@ -1,6 +1,8 @@
+#include <cstring>
 #include <iostream>
 
 extern "C" {
+#include <errno.h>
 #include <poll.h>
 #include <unistd.h>
 }
