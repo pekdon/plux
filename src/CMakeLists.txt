@@ -6,6 +6,7 @@ set(libplux_SOURCES
   cfg.cc
   log.cc
   plux.cc
+  regex.cc
   script.cc
   script_parse.cc
   script_run.cc

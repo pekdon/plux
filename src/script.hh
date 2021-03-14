@@ -4,7 +4,6 @@
 #include <iostream>
 #include <istream>
 #include <memory>
-#include <regex>
 #include <string>
 #include <sstream>
 #include <vector>

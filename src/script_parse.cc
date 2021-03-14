@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include "regex.hh"
 #include "script_parse.hh"
 
 namespace plux {
@@ -28,7 +29,7 @@ namespace plux {
         : _path(path),
           _is(is),
           _linenumber(0),
-          _shell_name_regex("^[A-Za-z0-9-_]+$")
+          _shell_name_regex("^[A-Za-z0-9_-]+$")
     {
     }
 
@@ -114,7 +115,7 @@ namespace plux {
         }
 
         std::string name = ctx.substr(7, 1);
-        if (! std::regex_match(name, _shell_name_regex)
+        if (! plux::regex_match(name, _shell_name_regex)
             || name.compare("cleanup") == 0) {
             std::string error("invalid shell name: ");
             error +=  name + ". only " + SHELL_NAME_CHARS + " allowed";
