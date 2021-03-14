@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "regex.hh"
 #include "script.hh"
 
 #define IS_VAR_CHAR(c) (isalnum((c)) || (c) == '_')
@@ -268,9 +269,9 @@ namespace plux {
         }
 
         try {
-            std::regex re(exp_pattern);
-            std::smatch matches;
-            if (std::regex_search(line, matches, re)) {
+            plux::regex re(exp_pattern);
+            plux::smatch matches;
+            if (plux::regex_search(line, matches, re)) {
                 for (size_t i = 1; i < matches.size(); i++) {
                     env.set_env(shell, std::to_string(i), VAR_SCOPE_SHELL,
                                 matches[i].str());
@@ -279,7 +280,7 @@ namespace plux {
             } else {
                 return false;
             }
-        } catch (const std::regex_error ex) {
+        } catch (const plux::regex_error ex) {
             throw ScriptError(shell, std::string("regex failed: ") + ex.what());
         }
     }

@@ -8,4 +8,6 @@
 #cmakedefine HAVE_TIMESPECCMP
 #cmakedefine HAVE_TIMESPECSUB
 
+#cmakedefine WORKING_CXX_REGEX
+
 #endif // _CONFIG_H_

@@ -3,10 +3,10 @@
 
 #include <istream>
 #include <memory>
-#include <regex>
 #include <sstream>
 
 #include "plux.hh"
+#include "regex.hh"
 #include "script.hh"
 
 namespace plux {
@@ -130,7 +130,7 @@ namespace plux {
         unsigned int _linenumber;
 
         /** Regular expression for validating shell names. */
-        std::regex _shell_name_regex;
+        plux::regex _shell_name_regex;
         /** Display string for allowed characters in shell name. */
         static std::string SHELL_NAME_CHARS;
     };

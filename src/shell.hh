@@ -2,12 +2,12 @@
 #define _SHELL_HH_
 
 #include <map>
-#include <regex>
 #include <string>
 #include <vector>
 
 #include "log.hh"
 #include "plux.hh"
+#include "regex.hh"
 #include "shell_ctx.hh"
 #include "shell_log.hh"
 
@@ -59,9 +59,9 @@ namespace plux {
         virtual void set_error_pattern(const std::string& pattern) override {
             _error_pattern = pattern;
             try {
-                _error = std::regex(pattern);
+                _error = plux::regex(pattern);
                 _error_pattern = pattern;
-            } catch (const std::regex_error ex) {
+            } catch (const plux::regex_error ex) {
                 throw ShellException(_name,
                                      std::string("invalid error pattern: ")
                                      + ex.what());
@@ -116,7 +116,7 @@ namespace plux {
         /** Error pattern */
         std::string _error_pattern;
         /** Error pattern, if any line matches signal error. */
-        std::basic_regex<char> _error;
+        plux::regex _error;
 
         /** Line buffer */
         std::vector<std::string> _lines;

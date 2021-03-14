@@ -136,6 +136,10 @@ namespace plux {
 
         for (ssize_t i = 0; i < size; i++) {
             if (data[i] == '\n') {
+                if (! _buf.empty() && _buf[_buf.size() - 1] == '\r') {
+                    _buf.erase(_buf.size() - 1);
+                }
+
                 match_error(_buf, true);
 
                 if (! _buf_matched) {
@@ -164,7 +168,7 @@ namespace plux {
             return;
         }
 
-        if (std::regex_search(line, _error)) {
+        if (plux::regex_search(line, _error)) {
             throw ShellException(_name,
                                  std::string("error pattern ") +
                                  _error_pattern + " matched");

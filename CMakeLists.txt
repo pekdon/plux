@@ -4,6 +4,7 @@ include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
 include(CheckCXXCompilerFlag)
+include(CheckCXXSourceRuns)
 
 project(plux)
 
@@ -28,6 +29,11 @@ endif (NOT LIBUTIL)
 check_function_exists(setenv HAVE_SETENV)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECCMP)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
+
+check_cxx_source_runs("
+#include <regex>
+int main() { std::regex(\"^[A-Za-z0-9_-]+$\"); }
+" WORKING_CXX_REGEX)
 
 # Look for platform specific tools
 find_program(SH sh /usr/xpg4/bin/sh /bin/sh /usr/xpg4/bin)
