@@ -9,12 +9,8 @@ include(CheckCXXSourceRuns)
 project(plux)
 
 # Check for C++11
-check_cxx_compiler_flag(-std=c++11 HAS_CXX11)
-if (HAS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-else (HAS_CXX11)
-  message(FATAL_ERROR "Compiler with C++11 support is required")
-endif (HAS_CXX11)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 check_include_file(pty.h HAVE_PTY_H)
 check_include_file(util.h HAVE_UTIL_H)
@@ -22,24 +18,35 @@ check_include_file(libutil.h HAVE_LIBUTIL_H)
 check_include_file(termios.h HAVE_TERMIOS_H)
 
 find_library(LIBUTIL util)
-if (NOT LIBUTIL)
-  message(FATAL_ERROR, "libutil not found")
-endif (NOT LIBUTIL)
 
 check_function_exists(setenv HAVE_SETENV)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECCMP)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
+
+# Add work-around for missing -std=c++11 flag when running the
+# check_cxx_source_runs tests
+set(orig_CMAKE_CXX_FLAGS ${CMAKE_CXX11_FLAGS})
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX11_STANDARD_COMPILE_OPTION})
 
 check_cxx_source_runs("
 #include <regex>
 int main() { std::regex(\"^[A-Za-z0-9_-]+$\"); }
 " WORKING_CXX_REGEX)
 
+set(CMAKE_CXX_FLAGS ${orig_CMAKE_CXX_FLAGS})
+
 # Look for platform specific tools
 find_program(SH sh /usr/xpg4/bin/sh /bin/sh /usr/xpg4/bin)
 
 add_definitions(-DSH="${SH}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH True)
+
+option(PEDANTIC "turn on strict compile-time warnings" OFF)
+option(TESTS "include tests" OFF)
+
+if (PEDANTIC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic")
+endif (PEDANTIC)
 
 configure_file(${CMAKE_SOURCE_DIR}/CMake/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h)

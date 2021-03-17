@@ -21,9 +21,13 @@ set_target_properties(libplux PROPERTIES
   CXX_STANDARD 11
   CXX_STANDARD_REQUIRED ON)
 
+set(plux_LIBS libplux)
+if (LIBUTIL)
+    set(plux_LIBS ${plux_LIBS} ${LIBUTIL})
+endif (LIBUTIL)
 add_executable(plux main.cc)
 target_include_directories(plux PUBLIC ${common_INCLUDE_DIRS})
-target_link_libraries(plux libplux ${LIBUTIL})
+target_link_libraries(plux ${plux_LIBS})
 
 set_target_properties(plux PROPERTIES
   CXX_STANDARD 11

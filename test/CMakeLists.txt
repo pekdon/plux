@@ -1,5 +1,7 @@
 set(common_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/src)
-set(common_LIBRARIRES ${LIBUTIL})
+if (LIBUTIL)
+    set(common_LIBRARIRES ${LIBUTIL})
+endif (LIBUTIL)
 
 add_executable(test_log test_log.cc)
 add_test(log test_log)
