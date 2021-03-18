@@ -1,11 +1,10 @@
-#ifndef _LOG_HH_
-#define _LOG_HH_
+#pragma once
 
 #include <string>
 #include <sstream>
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Application log level.
      */
@@ -35,9 +34,9 @@ namespace plux {
     class Log {
     public:
         Log(enum log_level level);
-        virtual ~Log();
+        virtual ~Log(void);
 
-        enum log_level level() const { return _level; }
+        enum log_level level(void) const { return _level; }
         void set_level(enum log_level level) { _level = level; }
 
         void trace(const std::string& src, const std::string& msg);
@@ -49,10 +48,10 @@ namespace plux {
                  const std::string& msg);
 
         // API used for operator<<
-        const std::string& msg_src() const { return _msg_src; }
+        const std::string& msg_src(void) const { return _msg_src; }
         void msg_set_src(const std::string& src) { _msg_src = src; };
-        std::ostringstream& msg_buf() { return _msg_buf; }
-        void msg_clear() {
+        std::ostringstream& msg_buf(void) { return _msg_buf; }
+        void msg_clear(void) {
             _msg_src = std::string();
             _msg_buf.str("");
         }
@@ -62,7 +61,7 @@ namespace plux {
                            const std::string& full_msg) = 0;
 
     private:
-        std::string format_timestamp();
+        std::string format_timestamp(void);
 
     private:
         enum log_level _level;
@@ -82,7 +81,7 @@ namespace plux {
     class LogFile : public Log {
     public:
         LogFile(enum log_level level, const std::string& path);
-        virtual ~LogFile();
+        virtual ~LogFile(void);
 
     protected:
         virtual void write(enum log_level level, const std::string& full_msg);
@@ -91,5 +90,3 @@ namespace plux {
         std::string _path;
     };
 }
-
-#endif // _LOG_HH_

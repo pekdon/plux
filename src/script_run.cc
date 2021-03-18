@@ -13,7 +13,16 @@ extern "C" {
 #define INFTIM -1
 #endif // !INFTIM
 
-namespace plux {
+namespace plux
+{
+    ScriptException::ScriptException(const std::string& error) throw()
+        : _error(error)
+    {
+    }
+
+    ScriptException::~ScriptException(void) throw()
+    {
+    }
 
     ScriptEnv::ScriptEnv(const env_map& os_env)
         : _os_env(os_env)
@@ -24,7 +33,7 @@ namespace plux {
         _os_env["PS1"] = "SH-PROMPT:";
     }
 
-    ScriptEnv::~ScriptEnv() { }
+    ScriptEnv::~ScriptEnv(void) { }
 
     bool ScriptEnv::get_env(const std::string& shell, const std::string& key,
                             std::string& val_ret) const
@@ -107,18 +116,18 @@ namespace plux {
         }
     }
 
-    void ScriptEnv::push_function()
+    void ScriptEnv::push_function(void)
     {
         _function.push_back(shell_env_map());
     }
 
-    void ScriptEnv::pop_function()
+    void ScriptEnv::pop_function(void)
     {
         _function.pop_back();
     }
 
-    env_map_const_it ScriptEnv::os_begin() const { return _os_env.begin(); }
-    env_map_const_it ScriptEnv::os_end() const { return _os_env.end(); }
+    env_map_const_it ScriptEnv::os_begin(void) const { return _os_env.begin(); }
+    env_map_const_it ScriptEnv::os_end(void) const { return _os_env.end(); }
 
     /**
      * Initialize scritp runner with log and default environment to be
@@ -139,7 +148,7 @@ namespace plux {
     /**
      * Cleanup resources, stops all shells started during run.
      */
-    ScriptRun::~ScriptRun()
+    ScriptRun::~ScriptRun(void)
     {
         stop();
 
@@ -154,7 +163,7 @@ namespace plux {
     /**
      * Run script.
      */
-    ScriptResult ScriptRun::run()
+    ScriptResult ScriptRun::run(void)
     {
         auto res = run_headers(_script->header_begin(), _script->header_end());
         if (res.status() == RES_OK) {
@@ -167,7 +176,7 @@ namespace plux {
     /**
      * Set stop signal on script.
      */
-    void ScriptRun::stop()
+    void ScriptRun::stop(void)
     {
         if (! _stop) {
             for (auto it : _shells) {
@@ -190,7 +199,8 @@ namespace plux {
                     return res;
                 }
             } catch (const PluxException& ex) {
-                return script_error(RES_ERROR, *it, ex.info());
+                std::string info = ex.info();
+                return script_error(RES_ERROR, *it, info);
             }
         }
         return ScriptResult();
@@ -208,7 +218,8 @@ namespace plux {
                     return res;
                 }
             } catch (const PluxException& ex) {
-                return script_error(RES_ERROR, *it, ex.info());
+                std::string info = ex.info();
+                return script_error(RES_ERROR, *it, info);
             }
         }
         return ScriptResult();
@@ -249,8 +260,7 @@ namespace plux {
         if (lres == RES_CALL) {
             auto fun = _script->get_fun(lres.fun());
             if (fun == nullptr) {
-                throw UndefinedException(shell_name, "function",
-                                         lres.fun());
+                throw UndefinedException(shell_name, "function", lres.fun());
             }
             return run_function(fun, shell_name,
                                 lres.arg_begin(), lres.arg_end());
@@ -271,7 +281,6 @@ namespace plux {
 
         auto num_args = arg_end - arg_begin;
         if (fun->num_args() != num_args) {
-            std::cout << num_args << std::endl;
             throw UndefinedException(shell, "argument", fun->name());
         }
 
@@ -306,7 +315,7 @@ namespace plux {
     {
         _log << "ScriptRun" << "wait for input on " << _shells.size()
              << " shells" << LOG_LEVEL_TRACE;
-        struct pollfd fds[_shells.size()];
+        std::unique_ptr<struct pollfd[]> fds(new pollfd[_shells.size()]);
         std::map<std::string, Shell*>::iterator it;
 
         it = _shells.begin();
@@ -316,7 +325,7 @@ namespace plux {
             fds[i].revents = 0;
         }
 
-        int ret = poll(fds, _shells.size(), timeout_ms);
+        int ret = poll(fds.get(), _shells.size(), timeout_ms);
         if (ret == 0) {
             _log.debug("ScriptRun", "poll timeout");
             return RES_TIMEOUT;
@@ -327,7 +336,7 @@ namespace plux {
         }
 
         it = _shells.begin();
-        for (int i = 0; i < _shells.size(); ++it, i++) {
+        for (size_t i = 0; i < _shells.size(); ++it, i++) {
             if (fds[i].revents & POLLIN) {
                 char buf[4096];
                 ssize_t nread = read(it->second->fd(), buf, sizeof(buf));

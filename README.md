@@ -24,8 +24,8 @@ PLUX treat the lines that send output to the shell as matched so
 there is no risk for accidentaly matching output that was entered
 on the command line.
 
-PLUX match error pattern continously
-------------------------------------
+PLUX match error pattern without input match
+--------------------------------------------
 
 PLUX will match the error pattern on complete lines as they are
 received without the use of any match command.

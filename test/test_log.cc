@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     TestLog test_log;
     try {
         return TestSuite::main(argc, argv);
-    } catch (plux::PluxException &ex) {
+    } catch (plux::PluxException& ex) {
         std::cerr << ex.to_string() << std::endl;
         return 1;
     }

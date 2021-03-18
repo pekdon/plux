@@ -1,5 +1,4 @@
-#ifndef _SCRIPT_PARSE_HH_
-#define _SCRIPT_PARSE_HH_
+#pragma once
 
 #include <istream>
 #include <memory>
@@ -9,30 +8,27 @@
 #include "regex.hh"
 #include "script.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Exception thrown if parsing of script fails due to incorrect or
      * incomplete input.
      */
     class ScriptParseError : public PluxException {
     public:
-        ScriptParseError(const std::string& path, unsigned int linenumber,
-                         const std::string& line, const std::string& error)
-            : _path(path),
-              _linenumber(linenumber),
-              _line(line),
-              _error(error)
-        {
-        }
+        ScriptParseError(const std::string& path,
+                         unsigned int linenumber,
+                         const std::string& line,
+                         const std::string& error) throw();
+        virtual ~ScriptParseError(void) throw();
 
-        const std::string& path() const { return _path; }
-        unsigned int linenumber() const { return _linenumber; }
-        const std::string& line() const { return _line; }
-        const std::string& error() const { return _error; }
+        const std::string& path(void) const { return _path; }
+        unsigned int linenumber(void) const { return _linenumber; }
+        const std::string& line(void) const { return _line; }
+        const std::string& error(void) const { return _error; }
 
-        virtual std::string info() const override { return _error; }
-        virtual std::string to_string() const override {
+        virtual std::string info(void) const override { return _error; }
+        virtual std::string to_string(void) const override {
             std::ostringstream buf("ScriptParseError: ");
             buf << _path << ":" << _linenumber << " " << _error << std::endl
                 << _line;
@@ -52,8 +48,8 @@ namespace plux {
 
     class ScriptParseCtx {
     public:
-        ScriptParseCtx() { }
-        ~ScriptParseCtx() { }
+        ScriptParseCtx(void) { }
+        ~ScriptParseCtx(void) { }
 
         std::string line;
         std::string::size_type start;
@@ -91,7 +87,7 @@ namespace plux {
     public:
         ScriptParse(const std::string& path, std::istream* is);
 
-        std::unique_ptr<Script> parse();
+        std::unique_ptr<Script> parse(void);
 
     protected:
         void set_is(std::istream* is) { _is = is; }
@@ -135,5 +131,3 @@ namespace plux {
         static std::string SHELL_NAME_CHARS;
     };
 }
-
-#endif // _SCRIPT_PARSE_HH_

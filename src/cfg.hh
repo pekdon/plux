@@ -1,5 +1,4 @@
-#ifndef _CFG_HH_
-#define _CFG_HH_
+#pragma once
 
 #include <string>
 
@@ -8,14 +7,12 @@
  */
 class Cfg {
 public:
-    Cfg();
-    ~Cfg();
+    Cfg(void);
+    ~Cfg(void);
 
-    const std::string& log_dir() const { return _log_dir; }
+    const std::string& log_dir(void) const { return _log_dir; }
 
 private:
     /** Path to log files for current run. */
     std::string _log_dir;
 };
-
-#endif // _CFG_HH_

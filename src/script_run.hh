@@ -1,5 +1,4 @@
-#ifndef _SCRIPT_RUN_HH_
-#define _SCRIPT_RUN_HH_
+#pragma once
 
 #include "cfg.hh"
 #include "log.hh"
@@ -8,8 +7,8 @@
 #include "shell.hh"
 #include "timeout.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Script result information including line reference etc.
      */
@@ -18,7 +17,7 @@ namespace plux {
         /**
          * Default construct, OK result.
          */
-        ScriptResult()
+        ScriptResult(void)
             : _res(RES_OK)
         {
         }
@@ -36,17 +35,19 @@ namespace plux {
         {
         }
 
-        enum line_status status() const { return _res.status(); }
-        const std::string& file() const {
+        enum line_status status(void) const { return _res.status(); }
+        const std::string& file(void) const {
             return _line ? _line->file() : plux::empty_string;
         }
-        unsigned int linenumber() const { return _line ? _line->line() : 0; }
-        const std::string& error() const { return _error; }
+        unsigned int linenumber(void) const {
+            return _line ? _line->line() : 0;
+        }
+        const std::string& error(void) const { return _error; }
 
-        std::vector<std::string>::const_iterator stack_begin() const {
+        std::vector<std::string>::const_iterator stack_begin(void) const {
             return _stack.begin();
         }
-        std::vector<std::string>::const_iterator stack_end() const {
+        std::vector<std::string>::const_iterator stack_end(void) const {
             return _stack.end();
         }
 
@@ -69,7 +70,7 @@ namespace plux {
     class ScriptEnv : public ShellEnv {
     public:
         ScriptEnv(const env_map& env);
-        virtual ~ScriptEnv();
+        virtual ~ScriptEnv(void);
 
         virtual bool get_env(const std::string& shell, const std::string& key,
                              std::string& val_ret) const override;
@@ -77,11 +78,11 @@ namespace plux {
                              enum var_scope scope,
                              const std::string& val) override;
 
-        virtual void push_function() override;
-        virtual void pop_function() override;
+        virtual void push_function(void) override;
+        virtual void pop_function(void) override;
 
-        virtual env_map_const_it os_begin() const override;
-        virtual env_map_const_it os_end() const override;
+        virtual env_map_const_it os_begin(void) const override;
+        virtual env_map_const_it os_end(void) const override;
 
     private:
         bool get_env_global(const std::string& key, std::string& val_ret) const;
@@ -106,10 +107,10 @@ namespace plux {
               _shell(shell)
         {
         }
-        virtual ~ScriptFunctionCtx() { }
+        virtual ~ScriptFunctionCtx(void) { }
 
-        virtual const std::string& name() const override { return _name; }
-        virtual const std::string& shell() const override { return _shell; }
+        virtual const std::string& name(void) const override { return _name; }
+        virtual const std::string& shell(void) const override { return _shell; }
 
     private:
         std::string _name;
@@ -118,14 +119,11 @@ namespace plux {
 
     class ScriptException : public PluxException {
     public:
-        ScriptException(const std::string& error)
-            : _error(error)
-        {
-        }
-        virtual ~ScriptException() { }
+        ScriptException(const std::string& error) throw();
+        virtual ~ScriptException(void) throw();
 
-        virtual std::string info() const override { return _error; }
-        virtual std::string to_string() const override {
+        virtual std::string info(void) const override { return _error; }
+        virtual std::string to_string(void) const override {
             return "ScriptException: " + _error;
         }
 
@@ -141,10 +139,10 @@ namespace plux {
     public:
         ScriptRun(Log& log, ProgressLog& progress_log, const env_map& env,
                   const Script* script, bool tail);
-        ~ScriptRun();
+        ~ScriptRun(void);
 
-        ScriptResult run();
-        void stop();
+        ScriptResult run(void);
+        void stop(void);
 
     protected:
         ScriptResult run_headers(line_it it, line_it end);
@@ -195,5 +193,3 @@ namespace plux {
     };
 
 }
-
-#endif // _SCRIPT_RUN_HH_

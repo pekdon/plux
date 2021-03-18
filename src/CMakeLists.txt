@@ -11,6 +11,7 @@ set(libplux_SOURCES
   script_parse.cc
   script_run.cc
   shell.cc
+  shell_ctx.cc
   shell_log.cc
   timeout.cc)
 

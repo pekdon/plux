@@ -1,5 +1,4 @@
-#ifndef _SHELL_HH_
-#define _SHELL_HH_
+#pragma once
 
 #include <map>
 #include <string>
@@ -11,23 +10,21 @@
 #include "shell_ctx.hh"
 #include "shell_log.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Exception thrown in management of shell.
      */
     class ShellException : public PluxException {
     public:
-        ShellException(const std::string& shell, const std::string& error)
-            : _shell(shell),
-              _error(error)
-        {
-        }
+        ShellException(const std::string& shell,
+                       const std::string& error) throw();
+        virtual ~ShellException(void) throw();
 
-        virtual std::string info() const override {
+        virtual std::string info(void) const override {
             return _shell + " " + _error;
         }
-        virtual std::string to_string() const override {
+        virtual std::string to_string(void) const override {
             return std::string("ShellException: ") + _shell + " " + _error;
         }
 
@@ -45,52 +42,54 @@ namespace plux {
 
         Shell(Log& log,
               ShellLog* shell_log,
-              ProgressLog& progress_log,
+              ProgressLog&,
               const std::string& name,
               const std::string& command,
               ShellEnv& shell_env);
         Shell(const Shell& shell) = delete;
-        virtual ~Shell();
+        virtual ~Shell(void);
 
-        void stop();
+        void stop(void);
 
-        virtual const std::string& name() const override { return _name; }
+        virtual const std::string& name(void) const override { return _name; }
 
-        const std::string& error_pattern() const { return _error_pattern; }
+        const std::string& error_pattern(void) const { return _error_pattern; }
         virtual void set_error_pattern(const std::string& pattern) override {
             _error_pattern = pattern;
             try {
                 _error = pattern;
                 _error_pattern = pattern;
-            } catch (const plux::regex_error ex) {
+            } catch (const plux::regex_error& ex) {
                 throw ShellException(_name,
                                      std::string("invalid error pattern: ")
                                      + ex.what());
             }
         }
 
-        virtual unsigned int timeout() const override { return _timeout_ms; }
+        virtual unsigned int timeout(void) const override {
+            return _timeout_ms;
+        }
         virtual void set_timeout(unsigned int timeout_ms) override {
             _timeout_ms = timeout_ms;
         }
 
-        int fd() const { return _fd; }
-        pid_t pid() const { return _pid; }
+        int fd(void) const { return _fd; }
+        pid_t pid(void) const { return _pid; }
 
         virtual bool input(const std::string& data) override;
         virtual void output(const char* data, ssize_t size) override;
 
-        virtual line_it line_begin() override { return _lines.begin(); }
-        virtual line_it line_end() override { return _lines.end(); }
+        virtual line_it line_begin(void) override { return _lines.begin(); }
+        virtual line_it line_end(void) override { return _lines.end(); }
         virtual void line_consume_until(line_it it) override;
 
-        virtual const std::string& buf() const override {
+        virtual const std::string& buf(void) const override {
             if (_buf_matched) {
                 return plux::empty_string;
             }
             return _buf;
         }
-        virtual void consume_buf() override { _buf_matched = true; }
+        virtual void consume_buf(void) override { _buf_matched = true; }
 
     private:
         void match_error(const std::string& line, bool is_line);
@@ -103,8 +102,6 @@ namespace plux {
         Log& _log;
         /** Shell IO log. */
         ShellLog* _shell_log;
-        /** Progress log. */
-        ProgressLog& _progress_log;
 
         /** Shell name. */
         std::string _name;
@@ -132,6 +129,4 @@ namespace plux {
         /** Child process pid (shell) */
         pid_t _pid;
     };
-};
-
-#endif // _SHELL_HH_
+}

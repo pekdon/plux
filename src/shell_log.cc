@@ -2,13 +2,14 @@
 
 #include <iostream>
 
-namespace plux {
+namespace plux
+{
     /**
      * Create file based output log for shells, opens input and output
      * log for writing.
      */
-    FileShellLog::FileShellLog(const std::string& path, const std::string& shell,
-                               bool tail)
+    FileShellLog::FileShellLog(const std::string& path,
+                               const std::string& shell, bool tail)
         : _shell(shell),
           _tail(tail)
     {
@@ -19,7 +20,7 @@ namespace plux {
     /**
      * Cleanup resources used by file based output log, close files.
      */
-    FileShellLog::~FileShellLog()
+    FileShellLog::~FileShellLog(void)
     {
         _input.close();
         _output.close();
@@ -50,7 +51,7 @@ namespace plux {
     {
     }
 
-    FileProgressLog::~FileProgressLog()
+    FileProgressLog::~FileProgressLog(void)
     {
     }
 

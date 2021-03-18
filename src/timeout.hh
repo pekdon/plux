@@ -1,20 +1,19 @@
-#ifndef _TIMEOUT_HH_
-#define _TIMEOUT_HH_
+#pragma once
 
 extern "C" {
 #include <time.h>
-}    
+}
 
-namespace plux {
-
+namespace plux
+{
     class Timeout {
     public:
         Timeout(unsigned int timeout_ms);
 
-        void restart();
+        void restart(void);
 
         void set_timeout_ms(unsigned int timeout_ms);
-        unsigned int get_ms_until_timeout();
+        unsigned int get_ms_until_timeout(void);
 
     private:
         /** Timer start, set on restart() */
@@ -22,7 +21,4 @@ namespace plux {
         /** Timeout. */
         struct timespec _timeout;
     };
-    
-};
-
-#endif // _TIMEOUT_HH_
+}

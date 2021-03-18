@@ -8,8 +8,8 @@ extern "C" {
 #include <time.h>
 }
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Map from log level name to log level.
      */
@@ -52,7 +52,7 @@ namespace plux {
     {
     }
 
-    Log::~Log()
+    Log::~Log(void)
     {
     }
 
@@ -98,9 +98,9 @@ namespace plux {
         write(level, full_msg);
     }
 
-    std::string Log::format_timestamp()
+    std::string Log::format_timestamp(void)
     {
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         struct tm tm;
         gmtime_r(&now, &tm);
 
@@ -143,7 +143,7 @@ namespace plux {
     {
     }
 
-    LogFile::~LogFile()
+    LogFile::~LogFile(void)
     {
     }
 
@@ -151,4 +151,4 @@ namespace plux {
     {
         std::cout << full_msg << std::endl;
     }
-};
+}

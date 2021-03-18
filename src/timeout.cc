@@ -6,8 +6,8 @@ extern "C" {
 
 #include "timeout.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Construct a new Timeout timer with timeout_ms timeout.
      */
@@ -20,7 +20,7 @@ namespace plux {
     /**
      * Restart timeout from now until timeout_ms in the future.
      */
-    void Timeout::restart()
+    void Timeout::restart(void)
     {
         int ret = clock_gettime(CLOCK_MONOTONIC, &_start);
         assert(ret == 0);
@@ -38,7 +38,7 @@ namespace plux {
     /**
      * Get milliseconds until current timer times out.
      */
-    unsigned int Timeout::get_ms_until_timeout()
+    unsigned int Timeout::get_ms_until_timeout(void)
     {
         struct timespec now, elapsed, left;
         int ret = clock_gettime(CLOCK_MONOTONIC, &now);

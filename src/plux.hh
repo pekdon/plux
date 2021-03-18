@@ -1,21 +1,21 @@
-#ifndef _PLUX_HH_
-#define _PLUX_HH_
+#pragma once
 
 #include <exception>
 #include <map>
 #include <string>
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Base class for all exceptions thrown by PLUX code.
      */
-    class PluxException : public std::exception {
+    class PluxException {
     public:
-        PluxException() { }
-        virtual ~PluxException() { }
-        virtual std::string info() const = 0; // { return std::string(); }
-        virtual std::string to_string() const {
+        PluxException(void) throw();
+        virtual ~PluxException(void) throw();
+
+        virtual std::string info(void) const = 0;
+        virtual std::string to_string(void) const {
             return "PluxException";
         }
     };
@@ -44,7 +44,4 @@ namespace plux {
     extern const unsigned int default_timeout_ms;
     extern const std::string empty_string;
     extern const std::map<std::string, std::string> default_env;
-
-};
-
-#endif // _PLUX_HH_
+}

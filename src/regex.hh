@@ -16,7 +16,6 @@ extern "C" {
 
 namespace plux
 {
-
 #ifdef WORKING_CXX_REGEX
 
     typedef std::regex regex;
@@ -94,4 +93,4 @@ namespace plux
     bool regex_search(const std::string& s, const regex& e);
     bool regex_search(const std::string& s, smatch& matches, const regex& e);
     bool regex_match(const std::string& s, const regex& e);
-};
+}

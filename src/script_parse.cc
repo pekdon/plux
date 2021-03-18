@@ -3,7 +3,22 @@
 #include "regex.hh"
 #include "script_parse.hh"
 
-namespace plux {
+namespace plux
+{
+    ScriptParseError::ScriptParseError(const std::string& path,
+                                       unsigned int linenumber,
+                                       const std::string& line,
+                                       const std::string& error) throw()
+        : _path(path),
+          _linenumber(linenumber),
+          _line(line),
+          _error(error)
+    {
+    }
+
+    ScriptParseError::~ScriptParseError(void) throw()
+    {
+    }
 
     /**
      * Script parser state, transitions go in order of apperance.
@@ -36,7 +51,7 @@ namespace plux {
     /**
      * Parse PLUX script from constructor provided istream.
      */
-    std::unique_ptr<Script> ScriptParse::parse()
+    std::unique_ptr<Script> ScriptParse::parse(void)
     {
         auto script = std::unique_ptr<Script>(new Script(_path));
 
@@ -201,7 +216,7 @@ namespace plux {
             std::string timeout_str = ctx.substr(9, 1);
             try {
                 timeout_s = std::stoul(timeout_str);
-            } catch (std::invalid_argument ex) {
+            } catch (std::invalid_argument&) {
                 throw ScriptParseError(_path, _linenumber, ctx.line,
                                        "invalid timeout, not a valid number");
             }

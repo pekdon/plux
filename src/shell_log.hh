@@ -1,18 +1,17 @@
-#ifndef _SHELL_LOG_HH_
-#define _SHELL_LOG_HH_
+#pragma once
 
 #include <fstream>
 #include <string>
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Shell output log, one is created for each shell
      */
     class ShellLog {
     public:
-        ShellLog() { }
-        virtual ~ShellLog() { }
+        ShellLog(void) { }
+        virtual ~ShellLog(void) { }
 
         virtual void input(const std::string& data) = 0;
         virtual void output(const char* data, ssize_t size) = 0;
@@ -25,7 +24,7 @@ namespace plux {
     public:
         FileShellLog(const std::string& path, const std::string& shell,
                      bool tail);
-        virtual ~FileShellLog();
+        virtual ~FileShellLog(void);
 
         virtual void input(const std::string& data);
         virtual void output(const char* data, ssize_t size);
@@ -45,8 +44,8 @@ namespace plux {
      */
     class ProgressLog {
     public:
-        ProgressLog() { }
-        virtual ~ProgressLog() { }
+        ProgressLog(void) { }
+        virtual ~ProgressLog(void) { }
 
         virtual void log(const std::string& shell, const std::string& msg) = 0;
         virtual void progress_start(const std::string& shell,
@@ -62,7 +61,7 @@ namespace plux {
     {
     public:
         FileProgressLog(const std::string& path);
-        virtual ~FileProgressLog();
+        virtual ~FileProgressLog(void);
 
         virtual void log(const std::string& shell, const std::string& msg);
         virtual void progress_start(const std::string& shell,
@@ -72,5 +71,3 @@ namespace plux {
     };
 
 }
-
-#endif // _SHELL_LOG_HH_

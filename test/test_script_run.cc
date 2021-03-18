@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
         TestScriptEnv test_script_env(env);
         TestSuite::main(argc, argv);
         return 0;
-    } catch (plux::PluxException &ex) {
+    } catch (plux::PluxException& ex) {
         std::cerr << ex.to_string() << std::endl;
         return 1;
     }

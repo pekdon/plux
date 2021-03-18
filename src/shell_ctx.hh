@@ -1,14 +1,14 @@
-#ifndef _SHELL_CTX_HH_
-#define _SHELL_CTX_HH_
+#pragma once
 
 #include <map>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "plux.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Environment map, used for OS environment, global and local
      * variables.
@@ -37,19 +37,14 @@ namespace plux {
     class UndefinedException : public PluxException {
     public:
         UndefinedException(const std::string& shell, const std::string& type,
-                           const std::string& name)
-            : _shell(shell),
-              _type(type),
-              _name(name)
-        {
-        }
-        virtual ~UndefinedException() { }
+                           const std::string& name) throw();
+        virtual ~UndefinedException(void) throw();
 
-        const std::string& shell() const { return _shell; }
-        const std::string& type() const { return _type; }
-        const std::string& name() const { return _name; }
+        const std::string& shell(void) const { return _shell; }
+        const std::string& type(void) const { return _type; }
+        const std::string& name(void) const { return _name; }
 
-        virtual std::string info() const {
+        virtual std::string info(void) const {
             std::ostringstream buf("undefined ");
             buf << _type << " " << _name;
             if (! _shell.empty()) {
@@ -58,7 +53,7 @@ namespace plux {
             return buf.str();
         }
 
-        virtual std::string to_string() const {
+        virtual std::string to_string(void) const {
             return std::string("UndefinedException: ") + _shell + " " + _name;
         }
 
@@ -73,8 +68,8 @@ namespace plux {
      */
     class ShellEnv {
     public:
-        ShellEnv() { }
-        virtual ~ShellEnv() { }
+        ShellEnv(void) { }
+        virtual ~ShellEnv(void) { }
 
         virtual bool get_env(const std::string& shell, const std::string& key,
                              std::string& val_ret) const = 0;
@@ -82,12 +77,12 @@ namespace plux {
                              enum var_scope scope, const std::string& val) = 0;
 
         /** Enter a new function scope. */
-        virtual void push_function() = 0;
+        virtual void push_function(void) = 0;
         /** Leave a function scope, drop all function scoped variables. */
-        virtual void pop_function() = 0;
+        virtual void pop_function(void) = 0;
 
-        virtual env_map_const_it os_begin() const = 0;
-        virtual env_map_const_it os_end() const = 0;
+        virtual env_map_const_it os_begin(void) const = 0;
+        virtual env_map_const_it os_end(void) const = 0;
     };
 
     /**
@@ -98,27 +93,27 @@ namespace plux {
         typedef std::vector<std::string> line_vector;
         typedef line_vector::iterator line_it;
 
-        ShellCtx() { }
-        virtual ~ShellCtx() { }
+        ShellCtx(void) { }
+        virtual ~ShellCtx(void) { }
 
-        virtual const std::string& name() const = 0;
+        virtual const std::string& name(void) const = 0;
 
         /** Set error pattern for shell */
         virtual void set_error_pattern(const std::string& pattern) = 0;
         /** Get timeout for shell. */
-        virtual unsigned int timeout() const = 0;
+        virtual unsigned int timeout(void) const = 0;
         /** Set timeout for shell */
         virtual void set_timeout(unsigned int timeout_ms) = 0;
 
         virtual bool input(const std::string& data) = 0;
         virtual void output(const char* data, ssize_t size) = 0;
 
-        virtual line_it line_begin() = 0;
-        virtual line_it line_end() = 0;
+        virtual line_it line_begin(void) = 0;
+        virtual line_it line_end(void) = 0;
         virtual void line_consume_until(line_it it) = 0;
 
-        virtual const std::string& buf() const = 0;
-        virtual void consume_buf() = 0;
+        virtual const std::string& buf(void) const = 0;
+        virtual void consume_buf(void) = 0;
     };
 
     /**
@@ -126,12 +121,10 @@ namespace plux {
      */
     class FunctionCtx {
     public:
-        FunctionCtx() { }
-        virtual ~FunctionCtx() { }
+        FunctionCtx(void) { }
+        virtual ~FunctionCtx(void) { }
 
-        virtual const std::string& name() const = 0;
-        virtual const std::string& shell() const = 0;
+        virtual const std::string& name(void) const = 0;
+        virtual const std::string& shell(void) const = 0;
     };
-};
-
-#endif // _SHELL_CTX_HH_
+}

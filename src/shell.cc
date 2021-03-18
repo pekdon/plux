@@ -28,16 +28,27 @@ extern "C" {
 
 #include "shell.hh"
 
-namespace plux {
+namespace plux
+{
+    ShellException::ShellException(const std::string& shell,
+                                   const std::string& error) throw()
+        : _shell(shell),
+          _error(error)
+    {
+    }
+
+    ShellException::~ShellException(void) throw()
+    {
+    }
+
     Shell::Shell(Log& log,
                  ShellLog* shell_log,
-                 ProgressLog& progress_log,
+                 ProgressLog&,
                  const std::string& name,
                  const std::string& command,
                  ShellEnv& shell_env)
         : _log(log),
           _shell_log(shell_log),
-          _progress_log(progress_log),
           _name(name),
           _timeout_ms(plux::default_timeout_ms),
           _command(command),
@@ -47,8 +58,8 @@ namespace plux {
           _pid(-1)
     {
         int master;
-        pid_t pid = forkpty(&master, NULL /* name */,
-                            NULL /* termp */, NULL /* winp */);
+        pid_t pid = forkpty(&master, nullptr /* name */,
+                            nullptr /* termp */, nullptr /* winp */);
         if (pid < 0) {
             log_and_throw_strerror("forkpty failed");
         }
@@ -60,7 +71,7 @@ namespace plux {
                        1 /* overwrite */);
             }
 
-            execlp(command.c_str(), command.c_str(), NULL);
+            execlp(command.c_str(), command.c_str(), nullptr);
             _log << "Shell" << "failed to exec shell " << command << ": "
                  << strerror(errno) << LOG_LEVEL_ERROR;
             exit(1);
@@ -80,19 +91,19 @@ namespace plux {
         _pid = pid;
     }
 
-    Shell::~Shell()
+    Shell::~Shell(void)
     {
         stop();
         kill(_pid, SIGKILL);
         int status;
-        _log.trace("shell", "waiting for pid " + std::to_string(static_cast<int>(_pid))
-                   + " to finish");
+        auto pid = std::to_string(static_cast<int>(_pid));
+        _log.trace("shell", "waiting for pid " + pid + " to finish");
         waitpid(_pid, &status, 0);
         _log.trace("shell", "pid " + std::to_string(static_cast<int>(_pid))
                    + " finished with " + std::to_string(WEXITSTATUS(status)));
     }
 
-    void Shell::stop()
+    void Shell::stop(void)
     {
         if (_fd != -1) {
             // Ctrl-C (signal ongoing command)

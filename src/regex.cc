@@ -71,7 +71,7 @@ namespace plux
             return false;
         }
 
-        return regexec(e.re(), s.c_str(), 0, NULL, 0) == 0;
+        return regexec(e.re(), s.c_str(), 0, nullptr, 0) == 0;
     }
 
     bool regex_search(const std::string& s, smatch& matches, const regex& e)
@@ -87,7 +87,7 @@ namespace plux
             return false;
         }
 
-        for (int i = 0; i < max_ref; i++) {
+        for (size_t i = 0; i < max_ref; i++) {
             std::string match;
             if (r_matches[i].rm_so == -1 || r_matches[i].rm_eo == -1) {
                 // no match, leave as empty string
@@ -111,7 +111,8 @@ namespace plux
             return false;
         }
 
-        return r_matches[0].rm_so == 0 || r_matches[0].rm_eo == s.size();
+        return (r_matches[0].rm_so == 0)
+            && (static_cast<size_t>(r_matches[0].rm_eo) == s.size());
     }
 
 #endif // WORKING_CXX_REGEX

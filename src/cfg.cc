@@ -5,7 +5,7 @@ extern "C" {
 #include <sys/stat.h>
 }
 
-Cfg::Cfg()
+Cfg::Cfg(void)
     : _log_dir("plux")
 {
     int ret = mkdir(_log_dir.c_str(), 0750);
@@ -15,6 +15,6 @@ Cfg::Cfg()
     }
 }
 
-Cfg::~Cfg()
+Cfg::~Cfg(void)
 {
 }

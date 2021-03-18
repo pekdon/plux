@@ -222,7 +222,7 @@ public:
         try {
             parse_shell(ctx("[shell missing-end"), name);
             ASSERT_EQUAL("missing end", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("missing end",
                          "shell command does not end with ]", ex.error());
         }
@@ -230,7 +230,7 @@ public:
         try {
             parse_shell(ctx("[shell invalid/char]"), name);
             ASSERT_EQUAL("invalid char", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("invalid char",
                          "invalid shell name: invalid/char. only "
                          "A-Z, a-z, 0-9, - and _ allowed", ex.error());
@@ -239,7 +239,7 @@ public:
         try {
             parse_shell(ctx("[shell cleanup]"), name);
             ASSERT_EQUAL("reserved name (cleanup)", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("reserved name (cleanup)",
                          "invalid shell name: cleanup. only "
                          "A-Z, a-z, 0-9, - and _ allowed", ex.error());
@@ -371,7 +371,7 @@ public:
         try {
             parse_line_cmd(ctx("[timeout nan]"));
             ASSERT_EQUAL("timeout nan", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("timeout nan",
                          "invalid timeout, not a valid number", ex.error());
         }
@@ -382,7 +382,7 @@ public:
         try {
             parse_line_cmd(ctx("% unknown command"));
             ASSERT_EQUAL("unknown", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("unknown", "unexpected content",
                          ex.error());
         }
@@ -390,7 +390,7 @@ public:
         try {
             parse_line_cmd(ctx("[unknown]"));
             ASSERT_EQUAL("unknown", false, true);
-        } catch (plux::ScriptParseError ex) {
+        } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("unknown", "unexpected content, unsupported function",
                          ex.error());
         }
@@ -416,7 +416,7 @@ int main(int argc, char* argv[])
 
     try {
         return TestSuite::main(argc, argv);
-    } catch (plux::PluxException &ex) {
+    } catch (plux::PluxException& ex) {
         std::cerr << ex.to_string() << std::endl;
         return 1;
     }

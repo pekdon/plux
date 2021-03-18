@@ -1,6 +1,14 @@
 #include "plux.hh"
 
-namespace plux {
+namespace plux
+{
+    PluxException::PluxException(void) throw()
+    {
+    }
+
+    PluxException::~PluxException(void) throw()
+    {
+    }
 
     const unsigned int default_timeout_ms = 60000;
     const std::string empty_string;
@@ -9,4 +17,4 @@ namespace plux {
         {"_TAB_", "\t"},
         {"_CTRL_C_", "\003"}
     };
-};
+}

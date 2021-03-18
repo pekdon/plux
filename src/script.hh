@@ -1,5 +1,4 @@
-#ifndef _SCRIPT_HH_
-#define _SCRIPT_HH_
+#pragma once
 
 #include <iostream>
 #include <istream>
@@ -10,29 +9,24 @@
 
 #include "shell_ctx.hh"
 
-namespace plux {
-
+namespace plux
+{
     /**
      * Error occurred during script execution such as invalid regex
      * compilation, invalid variable names etc.
      */
-    class ScriptError : PluxException {
+    class ScriptError : public PluxException {
     public:
-        ScriptError(const std::string& shell, const std::string& error)
-            : _shell(shell),
-              _error(error)
-        {
-        }
+        ScriptError(const std::string& shell, const std::string& error) throw();
+        virtual ~ScriptError(void) throw();
 
-        virtual ~ScriptError() { }
+        const std::string& shell(void) const { return _shell; }
+        const std::string& error(void) const { return _error; }
 
-        const std::string& shell() const { return _shell; }
-        const std::string& error() const { return _error; }
-
-        virtual std::string info() const override {
+        virtual std::string info(void) const {
             return _error;
         }
-        virtual std::string to_string() const override {
+        virtual std::string to_string(void) const {
             return "ScriptError: " + _shell + " " + _error;
         }
 
@@ -72,10 +66,10 @@ namespace plux {
               _args(args)
         {
         }
-        ~LineRes() { }
+        ~LineRes(void) { }
 
-        enum line_status status() const { return _status; }
-        const std::string& fun() const { return _fun; }
+        enum line_status status(void) const { return _status; }
+        const std::string& fun(void) const { return _fun; }
 
         bool operator==(enum line_status status) const {
             return _status == status;
@@ -84,8 +78,8 @@ namespace plux {
             return _status != status;
         }
 
-        arg_it arg_begin() const { return _args.begin(); }
-        arg_it arg_end() const { return _args.end(); }
+        arg_it arg_begin(void) const { return _args.begin(); }
+        arg_it arg_end(void) const { return _args.end(); }
 
     private:
         enum line_status _status;
@@ -105,14 +99,14 @@ namespace plux {
               _shell(shell)
         {
         }
-        virtual ~Line() { }
+        virtual ~Line(void) { }
 
-        const std::string& file() const { return _file; }
-        unsigned int line() const { return _line; }
-        const std::string& shell() const { return _shell; }
+        const std::string& file(void) const { return _file; }
+        unsigned int line(void) const { return _line; }
+        const std::string& shell(void) const { return _shell; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) = 0;
-        virtual std::string to_string() const = 0;
+        virtual std::string to_string(void) const = 0;
 
     protected:
         std::string expand_var(ShellEnv& env, const std::string& shell,
@@ -153,14 +147,14 @@ namespace plux {
               _val(val)
         {
         }
-        virtual ~HeaderConfigRequire() { }
+        virtual ~HeaderConfigRequire(void) { }
 
-        const std::string& key() const { return _key; }
-        const std::string& val() const { return _val; }
+        const std::string& key(void) const { return _key; }
+        const std::string& val(void) const { return _val; }
         void set_val(const std::string& val) { _val = val; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     private:
         std::string _key;
@@ -173,7 +167,7 @@ namespace plux {
     class HeaderInclude : public Header {
         using Header::Header;
 
-        virtual std::string to_string() const override {
+        virtual std::string to_string(void) const override {
             return "HeaderInclude";
         }
     };
@@ -191,22 +185,22 @@ namespace plux {
               _args(args)
         {
         }
-        virtual ~Function() { }
+        virtual ~Function(void) { }
 
-        const std::string& file() const { return _file; }
-        unsigned int line() const { return _line; }
-        const std::string& name() const { return _name; }
+        const std::string& file(void) const { return _file; }
+        unsigned int line(void) const { return _line; }
+        const std::string& name(void) const { return _name; }
 
-        std::size_t num_args() const { return _args.size(); }
-        std::vector<std::string>::const_iterator args_begin() const {
+        int num_args(void) const { return _args.size(); }
+        std::vector<std::string>::const_iterator args_begin(void) const {
             return _args.begin();
         }
-        std::vector<std::string>::const_iterator args_end() const {
+        std::vector<std::string>::const_iterator args_end(void) const {
             return _args.end();
         }
 
-        line_it line_begin() const { return _lines.begin(); }
-        line_it line_end() const { return _lines.end(); }
+        line_it line_begin(void) const { return _lines.begin(); }
+        line_it line_end(void) const { return _lines.end(); }
         void line_add(Line* line) { _lines.push_back(line); }
 
     private:
@@ -239,10 +233,10 @@ namespace plux {
               _val(val)
         {
         }
-        virtual ~VarAssign() { }
+        virtual ~VarAssign(void) { }
 
-        const std::string& key() const { return _key; }
-        const std::string& val() const { return _val; }
+        const std::string& key(void) const { return _key; }
+        const std::string& val(void) const { return _val; }
 
     private:
         std::string _key;
@@ -262,10 +256,10 @@ namespace plux {
               VarAssign(key, val)
         {
         }
-        virtual ~LineVarAssignGlobal() { }
+        virtual ~LineVarAssignGlobal(void) { }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
     };
 
     class LineProgress : public Line {
@@ -276,12 +270,12 @@ namespace plux {
               _msg(msg)
         {
         }
-        virtual ~LineProgress() { }
+        virtual ~LineProgress(void) { }
 
-        const std::string& msg() const { return _msg; }
+        const std::string& msg(void) const { return _msg; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     private:
         std::string _msg;
@@ -290,10 +284,10 @@ namespace plux {
     class LineLog : public LineProgress {
     public:
         using LineProgress::LineProgress;
-        virtual ~LineLog() { }
+        virtual ~LineLog(void) { }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
     };
 
     /**
@@ -316,19 +310,19 @@ namespace plux {
               _args(args)
         {
         }
-        virtual ~LineCall() { }
+        virtual ~LineCall(void) { }
 
-        const std::string& name() const { return _name; }
-        size_t num_args() const { return _args.size(); }
-        const std::vector<std::string>::const_iterator args_begin() const {
+        const std::string& name(void) const { return _name; }
+        size_t num_args(void) const { return _args.size(); }
+        const std::vector<std::string>::const_iterator args_begin(void) const {
             return _args.begin();
         }
-        const std::vector<std::string>::const_iterator args_end() const {
+        const std::vector<std::string>::const_iterator args_end(void) const {
             return _args.end();
         }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     private:
         /** Function name, supports variable expansion. */
@@ -349,13 +343,13 @@ namespace plux {
               _pattern(pattern)
         {
         }
-        ~LineSetErrorPattern() { }
+        ~LineSetErrorPattern(void) { }
 
-        const std::string& pattern() const { return _pattern; }
+        const std::string& pattern(void) const { return _pattern; }
         void set_pattern(const std::string& pattern) { _pattern = pattern; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     private:
         /** Error pattern. */
@@ -375,10 +369,10 @@ namespace plux {
               VarAssign(key, val)
         {
         }
-        virtual ~LineVarAssignShell() { }
+        virtual ~LineVarAssignShell(void) { }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
     };
 
     /**
@@ -392,13 +386,13 @@ namespace plux {
               _output(output)
         {
         }
-        virtual ~LineOutput() { }
+        virtual ~LineOutput(void) { }
 
-        const std::string& output() const { return _output; }
+        const std::string& output(void) const { return _output; }
         void set_output(const std::string& output) { _output = output; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     private:
         std::string _output;
@@ -416,12 +410,12 @@ namespace plux {
         {
         }
 
-        unsigned int timeout() const {
+        unsigned int timeout(void) const {
             return _timeout_ms ? _timeout_ms : plux::default_timeout_ms;
         }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     protected:
         /** Match timeout. */
@@ -439,9 +433,9 @@ namespace plux {
               _pattern(pattern)
         {
         }
-        virtual ~LineMatch() { }
+        virtual ~LineMatch(void) { }
 
-        const std::string& pattern() const { return _pattern; }
+        const std::string& pattern(void) const { return _pattern; }
         void set_pattern(const std::string& pattern) { _pattern = pattern; }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
@@ -461,9 +455,9 @@ namespace plux {
     class LineExactMatch : public LineMatch {
     public:
         using LineMatch::LineMatch;
-        virtual ~LineExactMatch() { }
+        virtual ~LineExactMatch(void) { }
 
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     protected:
         virtual bool match(ShellEnv& env, const std::string& shell,
@@ -476,9 +470,9 @@ namespace plux {
     class LineVarMatch : public LineMatch {
     public:
         using LineMatch::LineMatch;
-        virtual ~LineVarMatch() { }
+        virtual ~LineVarMatch(void) { }
 
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     protected:
         virtual bool match(ShellEnv& env, const std::string& shell,
@@ -491,13 +485,13 @@ namespace plux {
     class LineRegexMatch : public LineMatch {
     public:
         using LineMatch::LineMatch;
-        virtual ~LineRegexMatch() { }
+        virtual ~LineRegexMatch(void) { }
 
-        virtual std::string to_string() const override;
+        virtual std::string to_string(void) const override;
 
     protected:
         virtual bool match(ShellEnv& env, const std::string& shell,
-                           const std::string& line, bool is_line) override;
+                           const std::string& line, bool is_line) override ;
     };
 
     /**
@@ -506,15 +500,15 @@ namespace plux {
     class Script {
     public:
         Script(const std::string& file);
-        ~Script();
+        ~Script(void);
 
-        const std::string& file() const { return _file; }
-        const std::string& name() const { return _name; }
-        const std::string& doc() const { return _doc; }
+        const std::string& file(void) const { return _file; }
+        const std::string& name(void) const { return _name; }
+        const std::string& doc(void) const { return _doc; }
         void set_doc(const std::string& doc) { _doc = doc; }
 
-        line_it header_begin() const { return _headers.begin(); }
-        line_it header_end() const { return _headers.end(); }
+        line_it header_begin(void) const { return _headers.begin(); }
+        line_it header_end(void) const { return _headers.end(); }
         void header_add(Line* header) { _headers.push_back(header); }
 
         Function* get_fun(const std::string& name) const {
@@ -525,15 +519,15 @@ namespace plux {
             delete get_fun(name);
             _funs[name] = fun;
         }
-        fun_it fun_begin() const { return _funs.begin(); }
-        fun_it fun_end() const { return _funs.end(); }
+        fun_it fun_begin(void) const { return _funs.begin(); }
+        fun_it fun_end(void) const { return _funs.end(); }
 
-        line_it line_begin() const { return _lines.begin(); }
-        line_it line_end() const { return _lines.end(); }
+        line_it line_begin(void) const { return _lines.begin(); }
+        line_it line_end(void) const { return _lines.end(); }
         void line_add(Line* line) { _lines.push_back(line); }
 
-        line_it cleanup_begin() const { return _cleanup_lines.begin(); }
-        line_it cleanup_end() const { return _cleanup_lines.end(); }
+        line_it cleanup_begin(void) const { return _cleanup_lines.begin(); }
+        line_it cleanup_end(void) const { return _cleanup_lines.end(); }
         void cleanup_add(Line* line) { _cleanup_lines.push_back(line); }
 
     private:
@@ -553,6 +547,4 @@ namespace plux {
         /** lines for the cleanup section. */
         line_vector _cleanup_lines;
     };
-};
-
-#endif // _SCRIPT_HH_
+}

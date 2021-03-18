@@ -92,7 +92,7 @@ public:
         try {
             expand_var(env, "shell", "invalid $ is empty");
             ASSERT_EQUAL("expand_var, empty", false, true);
-        } catch (plux::ScriptError ex) {
+        } catch (plux::ScriptError& ex) {
             ASSERT_EQUAL("expand_var, empty",
                          "empty variable name", ex.error());
         }
@@ -100,7 +100,7 @@ public:
         try {
             expand_var(env, "shell", "my ${} var");
             ASSERT_EQUAL("expand_var, curly empty", false, true);
-        } catch (plux::ScriptError ex) {
+        } catch (plux::ScriptError& ex) {
             ASSERT_EQUAL("expand_var, curly empty",
                          "empty variable name", ex.error());
         }
@@ -108,7 +108,7 @@ public:
         try {
             expand_var(env, "shell", "end ${end");
             ASSERT_EQUAL("expand_var, curly incomplete", false, true);
-        } catch (plux::ScriptError ex) {
+        } catch (plux::ScriptError& ex) {
             ASSERT_EQUAL("expand_var, curly incomplete",
                          "end of line while scanning for }", ex.error());
         }
@@ -332,7 +332,7 @@ public:
         try {
             match(env, "shell", "some input", true);
             ASSERT_EQUAL("invalid", false, true);
-        } catch (plux::ScriptError ex) {
+        } catch (plux::ScriptError& ex) {
             ASSERT_EQUAL("invalid", "regex failed: ",
                          ex.error().substr(0, 14));
         }

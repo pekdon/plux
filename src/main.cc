@@ -119,7 +119,7 @@ static int run_file(int opt_dump, enum plux::log_level opt_log_level,
         } else {
             exitcode = run_script(script.get(), opt_log_level, opt_tail);
         }
-    } catch (plux::ScriptParseError ex) {
+    } catch (plux::ScriptParseError& ex) {
         std::cerr << "parsing of " << ex.path() << " failed at line "
                   << ex.linenumber() << std::endl
                   << "error: " << ex.error() << std::endl
@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
     const char* name = argv[0];
 
     struct option longopts[] = {
-        {"dump", no_argument, NULL, 'd'},
-        {"help", no_argument, NULL, 'h'},
-        {"log-level", required_argument, NULL, 'l'},
-        {"tail", no_argument, NULL, 't'},
-        NULL
+        {"dump", no_argument, nullptr, 'd'},
+        {"help", no_argument, nullptr, 'h'},
+        {"log-level", required_argument, nullptr, 'l'},
+        {"tail", no_argument, nullptr, 't'},
+        {nullptr, no_argument, nullptr, '\0'}
     };
 
     bool opt_dump = false;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     enum plux::log_level opt_log_level = plux::LOG_LEVEL_INFO;
 
     int ch;
-    while ((ch = getopt_long(argc, argv, "dhl:t", longopts, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "dhl:t", longopts, nullptr)) != -1) {
         switch (ch) {
         case 'd':
             opt_dump = true;
@@ -183,11 +183,11 @@ int main(int argc, char *argv[])
     int exitcode = 0;
     for (int i = 0; i < argc; i++) {
         glob_t pglob = {0};
-        if (glob(argv[i], 0, NULL, &pglob)) {
+        if (glob(argv[i], 0, nullptr, &pglob)) {
             std::cerr << "glob " << argv[i] << " failed: " << strerror(errno)
                       << std::endl;
         } else {
-            for (int j = 0; j < pglob.gl_pathc; j++) {
+            for (size_t j = 0; j < pglob.gl_pathc; j++) {
                 int file_exit_code = run_file(opt_dump, opt_log_level,
                                               opt_tail, pglob.gl_pathv[j]);
                 if (! exitcode && file_exit_code) {

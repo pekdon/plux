@@ -6,7 +6,18 @@
 
 #define IS_VAR_CHAR(c) (isalnum((c)) || (c) == '_')
 
-namespace plux {
+namespace plux
+{
+    ScriptError::ScriptError(const std::string& shell,
+                             const std::string& error) throw()
+        : _shell(shell),
+          _error(error)
+    {
+    }
+
+    ScriptError::~ScriptError(void) throw()
+    {
+    }
 
     std::string Line::expand_var(ShellEnv& env, const std::string& shell,
                                  const std::string& line)
@@ -95,7 +106,7 @@ namespace plux {
         return RES_ERROR;
     }
 
-    std::string HeaderConfigRequire::to_string() const
+    std::string HeaderConfigRequire::to_string(void) const
     {
         if (_val.empty()) {
             return "HeaderRequire " + _key;
@@ -111,7 +122,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineVarAssignGlobal::to_string() const
+    std::string LineVarAssignGlobal::to_string(void) const
     {
         return "LineVarAssignGlobal " + key() + "=" + val();
     }
@@ -122,7 +133,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineProgress::to_string() const
+    std::string LineProgress::to_string(void) const
     {
         return "LineProgress " + _msg;
     }
@@ -133,7 +144,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineLog::to_string() const
+    std::string LineLog::to_string(void) const
     {
         return "LineLog " + msg();
     }
@@ -148,7 +159,7 @@ namespace plux {
         return LineRes(RES_CALL, name, args);
     }
 
-    std::string LineCall::to_string() const
+    std::string LineCall::to_string(void) const
     {
         return std::string("LineCall ") + _name;
     }
@@ -160,7 +171,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineSetErrorPattern::to_string() const
+    std::string LineSetErrorPattern::to_string(void) const
     {
         return "LineSetErrorPattern " + _pattern;
     }
@@ -172,7 +183,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineVarAssignShell::to_string() const
+    std::string LineVarAssignShell::to_string(void) const
     {
         return "LineVarAssignLocal " + key() + "=" + val();
     }
@@ -184,7 +195,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineOutput::to_string() const
+    std::string LineOutput::to_string(void) const
     {
         return std::string("LineOutput ") +
             _output.substr(0, _output.size() - 1);
@@ -196,7 +207,7 @@ namespace plux {
         return RES_OK;
     }
 
-    std::string LineTimeout::to_string() const
+    std::string LineTimeout::to_string(void) const
     {
         if (_timeout_ms == 0) {
             return std::string("LineTimeout reset");
@@ -229,7 +240,7 @@ namespace plux {
         return LineRes(RES_NO_MATCH);
     }
 
-    std::string LineExactMatch::to_string() const
+    std::string LineExactMatch::to_string(void) const
     {
         return std::string("LineExactMatch ") + pattern();
     }
@@ -240,7 +251,7 @@ namespace plux {
         return line.find(pattern()) != std::string::npos;
     }
 
-    std::string LineVarMatch::to_string() const
+    std::string LineVarMatch::to_string(void) const
     {
         return std::string("LineVarMatch ") + pattern();
     }
@@ -252,7 +263,7 @@ namespace plux {
         return line.find(exp_pattern) != std::string::npos;
     }
 
-    std::string LineRegexMatch::to_string() const
+    std::string LineRegexMatch::to_string(void) const
     {
         return std::string("LineRegexMatch ") + pattern();
     }
@@ -280,8 +291,10 @@ namespace plux {
             } else {
                 return false;
             }
-        } catch (const plux::regex_error ex) {
-            throw ScriptError(shell, std::string("regex failed: ") + ex.what());
+        } catch (const plux::regex_error& ex) {
+            std::string msg("regex failed: ");
+            msg += ex.what();
+            throw ScriptError(shell, msg);
         }
     }
 
@@ -299,7 +312,7 @@ namespace plux {
         _name = file.substr(start, end - start);
     }
 
-    Script::~Script()
+    Script::~Script(void)
     {
         for (auto it : _headers) {
             delete it;
