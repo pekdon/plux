@@ -4,6 +4,7 @@ set(common_INCLUDE_DIRS ${PROJECT_BINARY_DIR})
 
 set(libplux_SOURCES
   cfg.cc
+  forkpty.cc
   log.cc
   plux.cc
   regex.cc

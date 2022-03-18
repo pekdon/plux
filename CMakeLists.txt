@@ -20,6 +20,7 @@ check_include_file(termios.h HAVE_TERMIOS_H)
 find_library(LIBUTIL util)
 
 check_function_exists(setenv HAVE_SETENV)
+check_function_exists(forkpty HAVE_FORKPTY)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECCMP)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
 

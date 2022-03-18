@@ -5,6 +5,9 @@
 #cmakedefine HAVE_UTIL_H
 #cmakedefine HAVE_LIBUTIL_H
 #cmakedefine HAVE_TERMIOS_H
+
+#cmakedefine HAVE_SETENV
+#cmakedefine HAVE_FORKPTY
 #cmakedefine HAVE_TIMESPECCMP
 #cmakedefine HAVE_TIMESPECSUB
 

@@ -26,6 +26,7 @@ extern "C" {
 #endif // HAVE_TERMIOS_H
 }
 
+#include "compat.h"
 #include "shell.hh"
 
 namespace plux

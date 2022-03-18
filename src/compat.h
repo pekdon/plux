@@ -2,8 +2,16 @@
 #define _COMPAT_H_
 
 #include <time.h>
+#include <termios.h>
 
 #include "config.h"
+
+#ifndef HAVE_FORKPTY
+
+pid_t forkpty(int *amaster, char *name,
+              struct termios *termp, struct winsize *winp);
+
+#endif // !HAVE_FORKPTY
 
 #ifndef HAVE_TIMESPECCMP
 
