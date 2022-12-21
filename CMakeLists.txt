@@ -19,8 +19,17 @@ check_include_file(termios.h HAVE_TERMIOS_H)
 
 find_library(LIBUTIL util)
 
+# setenv
 check_function_exists(setenv HAVE_SETENV)
+
+# forkpty may require -lutil
+set(orig_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
+if (LIBUTIL)
+    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${LIBUTIL})
+endif (LIBUTIL)
 check_function_exists(forkpty HAVE_FORKPTY)
+set(CMAKE_REQUIRED_LIBRARIES ${orig_CMAKE_REQUIRED_LIBRARIES})
+
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECCMP)
 check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
 
