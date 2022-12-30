@@ -1,0 +1,32 @@
+#!/bin/sh
+
+INPUT=`dirname $0`
+OUTPUT="stdlib_builtins.hh"
+
+cat >$OUTPUT <<EOF
+// generated file, do not edit
+
+#include <map>
+#include <string>
+
+static std::map<std::string, std::string> builtin_funs = {
+EOF
+
+need_comma=0
+for fn_full in `ls $INPUT/*.pluxinc`; do
+	fn=`basename $fn_full`
+	for fun in `grep '^\[function ' $fn_full \
+			| sed 's/]//' \
+			| cut -d ' ' -f 2`; do
+		if test $need_comma -eq 1; then
+			echo "    , {\"$fun\", \"$fn\"}" >>$OUTPUT
+		else
+			echo "      {\"$fun\", \"$fn\"}" >>$OUTPUT
+		fi
+		need_comma=1
+	done
+done
+
+cat >>$OUTPUT <<EOF
+};
+EOF

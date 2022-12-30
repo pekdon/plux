@@ -1,0 +1,10 @@
+[doc]
+usage: [call sh-eval "shell expression"]
+
+Run shell expression and verify it finished with a 0 exit code.
+[enddoc]
+
+[function sh-eval expr]
+	!$expr
+	[call sh-ok]
+[endfunction]

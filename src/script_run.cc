@@ -8,6 +8,7 @@ extern "C" {
 #include <unistd.h>
 }
 
+#include "stdlib_builtins.hh"
 #include "script_parse.hh"
 #include "script_run.hh"
 
@@ -277,12 +278,7 @@ namespace plux
         }
 
         if (lres == RES_CALL) {
-            auto fun = _script_env.fun_get(lres.fun());
-            if (fun == nullptr) {
-                throw UndefinedException(shell_name, "function", lres.fun());
-            }
-            return run_function(fun, shell_name,
-                                lres.arg_begin(), lres.arg_end());
+            return run_function(lres, line, shell_name);
         } else if (lres == RES_INCLUDE) {
             return run_include(line, lres.fun());
         } else if (lres != RES_OK) {
@@ -290,6 +286,35 @@ namespace plux
         } else {
             return ScriptResult();
         }
+    }
+
+    ScriptResult ScriptRun::run_function(LineRes& lres, const Line* line,
+                                         const std::string& shell)
+    {
+        auto fun = _script_env.fun_get(lres.fun());
+        if (fun == nullptr) {
+            // function not loaded, look for a builting function
+            auto it = builtin_funs.find(lres.fun());
+            if (it != builtin_funs.end()) {
+                std::string filename = PLUX_STDLIB_PATH "/" + it->second;
+                _log << "ScriptRun" << "include builtin " << lres.fun()
+                     << " from " << filename << LOG_LEVEL_TRACE;
+                auto res = run_include(line, filename);
+                if (res.status() != RES_OK) {
+                    return res;
+                }
+                fun = _script_env.fun_get(lres.fun());
+            }
+        }
+
+        if (fun == nullptr) {
+            throw UndefinedException(shell, "function", lres.fun());
+        }
+
+
+        return run_function(fun, shell,
+                            lres.arg_begin(), lres.arg_end());
+
     }
 
     ScriptResult ScriptRun::run_function(Function* fun,

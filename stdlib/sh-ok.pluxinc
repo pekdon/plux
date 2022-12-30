@@ -1,0 +1,12 @@
+[doc]
+usage: [call sh-ok]
+
+Verify that the last executed command finished with 0 exit code.
+[enddoc]
+
+[function sh-ok]
+	?SH-PROMPT:
+	!echo $$?
+	?^0$
+	?SH-PROMPT:
+[endfunction]

@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.0)
 
+# Check for C++11
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceRuns)
+include(GNUInstallDirs)
 
 project(plux)
-
-# Check for C++11
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 check_include_file(pty.h HAVE_PTY_H)
 check_include_file(util.h HAVE_UTIL_H)
@@ -49,6 +51,7 @@ set(CMAKE_CXX_FLAGS ${orig_CMAKE_CXX_FLAGS})
 find_program(SH sh /usr/xpg4/bin/sh /bin/sh /usr/xpg4/bin)
 
 add_definitions(-DSH="${SH}")
+add_definitions(-DPLUX_STDLIB_PATH="${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/plux/stdlib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH True)
 
 option(PEDANTIC "turn on strict compile-time warnings" OFF)
@@ -62,6 +65,7 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 add_subdirectory(src)
+add_subdirectory(stdlib)
 
 if (TESTS)
    enable_testing()

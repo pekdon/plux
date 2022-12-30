@@ -1,0 +1,15 @@
+[doc]
+usage: sh-which command shell-variable
+
+execute which in shell taking into account various output formats of which
+defining the shell variable with the command if found.
+[enddoc]
+
+[function sh-which command sh_var]
+	!${sh_var}=`which ${command} 2>/dev/null`
+	?SH-PROMPT:
+	!if test $$? -ne 0; then
+	!    ${sh_var}=''
+	!fi
+	?SH-PROMPT:
+[endfunction]

@@ -148,6 +148,8 @@ namespace plux
         ScriptResult run_headers(line_it it, line_it end);
         ScriptResult run_lines(line_it it, line_it end);
         ScriptResult run_line(Line* line);
+        ScriptResult run_function(LineRes& lres, const Line* line,
+                                  const std::string& shell);
         ScriptResult run_function(Function* fun, const std::string& shell,
                                   LineRes::arg_it arg_begin,
                                   LineRes::arg_it arg_end);
