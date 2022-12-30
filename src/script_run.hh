@@ -67,10 +67,10 @@ namespace plux
     /**
      * Script environment.
      */
-    class ScriptEnv : public ShellEnv {
+    class ShellEnvImpl : public ShellEnv {
     public:
-        ScriptEnv(const env_map& env);
-        virtual ~ScriptEnv(void);
+        ShellEnvImpl(const env_map& env);
+        virtual ~ShellEnvImpl(void);
 
         virtual bool get_env(const std::string& shell, const std::string& key,
                              std::string& val_ret) const override;
@@ -149,8 +149,10 @@ namespace plux
         ScriptResult run_lines(line_it it, line_it end);
         ScriptResult run_line(Line* line);
         ScriptResult run_function(Function* fun, const std::string& shell,
-                             LineRes::arg_it arg_begin,
-                             LineRes::arg_it arg_end);
+                                  LineRes::arg_it arg_begin,
+                                  LineRes::arg_it arg_end);
+        ScriptResult run_include(const Line* line,
+                                 const std::string& filename);
         enum line_status wait_for_input(int timeout_ms);
 
         ShellCtx* get_or_init_shell(const std::string& name);
@@ -166,9 +168,12 @@ namespace plux
                                   std::string info);
 
     private:
+        ScriptResult run(const Script* script);
+
+    private:
         /** If set to true, tail shell output */
         bool _tail;
-        /** Configuratoin */
+        /** Configuration */
         Cfg _cfg;
         /** Applicaition log. */
         Log& _log;
@@ -184,10 +189,12 @@ namespace plux
 
         /** Timeout for current command. */
         Timeout _timeout;
-        /** Script/Shell environment. */
-        ScriptEnv _env;
+        /** Shell environment. */
+        ShellEnvImpl _env;
+        /** Script environment. */
+        ScriptEnv& _script_env;
         /** Script */
-        const Script* _script;
+        std::vector<const Script*> _scripts;
         /** */
         std::vector<ScriptFunctionCtx> _fun_ctx;
     };

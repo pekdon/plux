@@ -1,0 +1,2 @@
+# missing doc tags, will generate unexpected content, expected [doc]
+[global var=invalid]

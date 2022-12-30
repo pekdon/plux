@@ -1,5 +1,6 @@
 #include <cstring>
 #include <iostream>
+#include <sstream>
 
 extern "C" {
 #include <errno.h>
@@ -7,6 +8,7 @@ extern "C" {
 #include <unistd.h>
 }
 
+#include "script_parse.hh"
 #include "script_run.hh"
 
 #ifndef INFTIM
@@ -24,7 +26,7 @@ namespace plux
     {
     }
 
-    ScriptEnv::ScriptEnv(const env_map& os_env)
+    ShellEnvImpl::ShellEnvImpl(const env_map& os_env)
         : _os_env(os_env)
     {
         // override local shell settings, could render PS1 setting inactive
@@ -33,18 +35,19 @@ namespace plux
         _os_env["PS1"] = "SH-PROMPT:";
     }
 
-    ScriptEnv::~ScriptEnv(void) { }
+    ShellEnvImpl::~ShellEnvImpl(void) { }
 
-    bool ScriptEnv::get_env(const std::string& shell, const std::string& key,
-                            std::string& val_ret) const
+    bool ShellEnvImpl::get_env(const std::string& shell,
+                               const std::string& key,
+                               std::string& val_ret) const
     {
         return get_env_function(shell, key, val_ret)
             || get_env_shell(shell, key, val_ret)
             || get_env_global(key, val_ret);
     }
 
-    bool ScriptEnv::get_env_global(const std::string& key,
-                                   std::string& val_ret) const
+    bool ShellEnvImpl::get_env_global(const std::string& key,
+                                      std::string& val_ret) const
     {
         env_map_const_it it;
         if ((it = _global.find(key)) != _global.end()) {
@@ -62,16 +65,16 @@ namespace plux
         return false;
     }
 
-    bool ScriptEnv::get_env_shell(const std::string& shell,
-                                  const std::string& key,
-                                  std::string& val_ret) const
+    bool ShellEnvImpl::get_env_shell(const std::string& shell,
+                                     const std::string& key,
+                                     std::string& val_ret) const
     {
         return get_var(_shell, shell, key, val_ret);
     }
 
-    bool ScriptEnv::get_env_function(const std::string& shell,
-                                     const std::string& key,
-                                     std::string& val_ret) const
+    bool ShellEnvImpl::get_env_function(const std::string& shell,
+                                        const std::string& key,
+                                        std::string& val_ret) const
     {
         if (_function.empty()) {
             return false;
@@ -82,8 +85,10 @@ namespace plux
         return get_var(_function.back(), "", key, val_ret);
     }
 
-    bool ScriptEnv::get_var(const shell_env_map& env, const std::string& shell,
-                            const std::string& key, std::string& val_ret) const
+    bool ShellEnvImpl::get_var(const shell_env_map& env,
+                               const std::string& shell,
+                               const std::string& key,
+                               std::string& val_ret) const
     {
         auto s_it = env.find(shell);
         if (s_it != env.end()) {
@@ -96,8 +101,9 @@ namespace plux
         return false;
     }
 
-    void ScriptEnv::set_env(const std::string& shell, const std::string& key,
-                            enum var_scope scope, const std::string& val)
+    void ShellEnvImpl::set_env(const std::string& shell,
+                               const std::string& key,
+                               enum var_scope scope, const std::string& val)
     {
         if (scope == VAR_SCOPE_GLOBAL) {
             _global[key] = val;
@@ -116,18 +122,24 @@ namespace plux
         }
     }
 
-    void ScriptEnv::push_function(void)
+    void ShellEnvImpl::push_function(void)
     {
         _function.push_back(shell_env_map());
     }
 
-    void ScriptEnv::pop_function(void)
+    void ShellEnvImpl::pop_function(void)
     {
         _function.pop_back();
     }
 
-    env_map_const_it ScriptEnv::os_begin(void) const { return _os_env.begin(); }
-    env_map_const_it ScriptEnv::os_end(void) const { return _os_env.end(); }
+    env_map_const_it ShellEnvImpl::os_begin(void) const
+    {
+        return _os_env.begin();
+    }
+    env_map_const_it ShellEnvImpl::os_end(void) const
+    {
+        return _os_env.end();
+    }
 
     /**
      * Initialize scritp runner with log and default environment to be
@@ -141,8 +153,9 @@ namespace plux
           _stop(false),
           _timeout(default_timeout_ms),
           _env(env),
-          _script(script)
+          _script_env(script->env())
     {
+        _scripts.push_back(script);
     }
 
     /**
@@ -165,10 +178,16 @@ namespace plux
      */
     ScriptResult ScriptRun::run(void)
     {
-        auto res = run_headers(_script->header_begin(), _script->header_end());
+        const Script* script = _scripts.front();
+        return run(script);
+    }
+
+    ScriptResult ScriptRun::run(const Script* script)
+    {
+        auto res = run_headers(script->header_begin(), script->header_end());
         if (res.status() == RES_OK) {
-            res = run_lines(_script->line_begin(), _script->line_end());
-            run_lines(_script->cleanup_begin(), _script->cleanup_end());
+            res = run_lines(script->line_begin(), script->line_end());
+            run_lines(script->cleanup_begin(), script->cleanup_end());
         }
         return res;
     }
@@ -258,12 +277,14 @@ namespace plux
         }
 
         if (lres == RES_CALL) {
-            auto fun = _script->get_fun(lres.fun());
+            auto fun = _script_env.fun_get(lres.fun());
             if (fun == nullptr) {
                 throw UndefinedException(shell_name, "function", lres.fun());
             }
             return run_function(fun, shell_name,
                                 lres.arg_begin(), lres.arg_end());
+        } else if (lres == RES_INCLUDE) {
+            return run_include(line, lres.fun());
         } else if (lres != RES_OK) {
             return script_error(lres, line, plux::empty_string);
         } else {
@@ -305,6 +326,35 @@ namespace plux
         pop_function(fun, shell);
 
         return ScriptResult();
+    }
+
+    ScriptResult ScriptRun::run_include(const Line* line,
+                                        const std::string& filename)
+    {
+        _log << "ScriptRun" << "run_include " << filename << LOG_LEVEL_TRACE;
+
+        std::filebuf fb;
+        if (! fb.open(filename, std::ios::in)) {
+            return script_error(RES_ERROR, line,
+                                "failed to include: " + filename);
+        }
+
+        ScriptResult res;
+        std::istream is(&fb);
+        try {
+            ScriptParse script_parse(filename, &is, _script_env);
+            auto script = script_parse.parse();
+            res = run(script.get());
+        } catch (ScriptParseError& ex) {
+            std::ostringstream oss;
+            oss << "parsing of " << ex.path() << " failed at line "
+                << ex.linenumber() << " "
+                << "error: " << ex.error() << " "
+                << "content: " << ex.line();
+            return script_error(RES_ERROR, line, oss.str());
+        }
+        return res;
+
     }
 
     /**
@@ -379,7 +429,8 @@ namespace plux
 
     ShellLog* ScriptRun::init_shell_log(const std::string& name)
     {
-        auto path = _cfg.log_dir() + "/" + _script->name() + "_" + name;
+        auto script_name = _scripts.front()->name();
+        auto path = _cfg.log_dir() + "/" + script_name + "_" + name;
         _shell_logs.push_back(new FileShellLog(path, name, _tail));
         return _shell_logs.back();
     }
@@ -422,7 +473,7 @@ namespace plux
 
         std::vector<std::string> stack;
         for (auto it : _fun_ctx) {
-            auto fun = _script->get_fun(it.name());
+            auto fun = _script_env.fun_get(it.name());
             auto frame = fun->file() + ":" + std::to_string(fun->line())
                 + " " + it.name();
             stack.push_back(frame);

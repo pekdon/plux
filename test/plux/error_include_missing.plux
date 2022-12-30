@@ -1,0 +1,5 @@
+[doc]
+Test include of missing file (error)
+[enddoc]
+
+[include include_missing.pluxinc]

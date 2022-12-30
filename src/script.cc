@@ -3,6 +3,7 @@
 
 #include "regex.hh"
 #include "script.hh"
+#include "script_parse.hh"
 
 #define IS_VAR_CHAR(c) (isalnum((c)) || (c) == '_')
 
@@ -113,6 +114,16 @@ namespace plux
         } else {
             return "HeaderRequire " + _key + "=" + _val;
         }
+    }
+
+    LineRes HeaderInclude::run(ShellCtx& ctx, ShellEnv& env)
+    {
+        return LineRes(RES_INCLUDE, _include_file);
+    }
+
+    std::string HeaderInclude::to_string(void) const
+    {
+        return "HeaderInclude " + _include_file;
     }
 
     LineRes LineVarAssignGlobal::run(ShellCtx& ctx, ShellEnv& env)
@@ -298,8 +309,9 @@ namespace plux
         }
     }
 
-    Script::Script(const std::string& file)
-        : _file(file)
+    Script::Script(const std::string& file, ScriptEnv& env)
+        : _file(file),
+          _env(env)
     {
         auto start = file.find_last_of("/");
         if (start == std::string::npos) {
@@ -316,9 +328,6 @@ namespace plux
     {
         for (auto it : _headers) {
             delete it;
-        }
-        for (auto it : _funs) {
-            delete it.second;
         }
         for (auto it : _lines) {
             delete it;

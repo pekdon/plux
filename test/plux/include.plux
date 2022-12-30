@@ -1,0 +1,11 @@
+[doc]
+Test file includes.
+[enddoc]
+
+[include include_var.pluxinc]
+[include include_fun.pluxinc]
+
+[shell sh1]
+	[call included-fun ${included_var}]
+	?output was-included
+	?SH-PROMPT:

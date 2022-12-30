@@ -40,9 +40,11 @@ namespace plux
      * script with the parse method. Once parse is called this
      * instance is consumed.
      */
-    ScriptParse::ScriptParse(const std::string& path, std::istream *is)
+    ScriptParse::ScriptParse(const std::string& path, std::istream *is,
+                             ScriptEnv& env)
         : _path(path),
           _is(is),
+          _env(env),
           _linenumber(0),
           _shell_name_regex("^[A-Za-z0-9_-]+$")
     {
@@ -53,7 +55,7 @@ namespace plux
      */
     std::unique_ptr<Script> ScriptParse::parse(void)
     {
-        auto script = std::unique_ptr<Script>(new Script(_path));
+        auto script = std::unique_ptr<Script>(new Script(_path, _env));
 
         Line* line_cmd;
 
@@ -85,7 +87,7 @@ namespace plux
                     state = PARSE_STATE_SHELL;
                 } else if (ctx.starts_with("[function ")) {
                     auto fun = parse_function(ctx);
-                    script->fun_add(fun->name(), fun);
+                    script->env().fun_set(fun->name(), fun);
                 } else if (ctx.starts_with("[macro ")) {
                     auto macro = parse_macro(ctx);
                     delete macro;
@@ -146,14 +148,13 @@ namespace plux
     Line* ScriptParse::parse_header_cmd(const ScriptParseCtx& ctx)
     {
         if (ctx.starts_with("[include ")) {
-            parse_error(ctx.line, "not implemented");
+            return parse_include(ctx);;
         } else if (ctx.starts_with("[config ")) {
             return parse_config(ctx);
         } else if (ctx.starts_with("[global ")) {
             return parse_global(ctx);
-        } else {
-            parse_error(ctx.line, "unexpected content in headers");
         }
+        parse_error(ctx.line, "unexpected content in headers");
         return nullptr;
     }
 
@@ -295,6 +296,12 @@ namespace plux
     {
         parse_error(ctx.line, "not implemented");
         return nullptr;
+    }
+
+    Line* ScriptParse::parse_include(const ScriptParseCtx& ctx)
+    {
+        std::string file = ctx.substr(9, 1);
+        return new HeaderInclude(_path, _linenumber, file);
     }
 
     Line* ScriptParse::parse_config(const ScriptParseCtx& ctx)

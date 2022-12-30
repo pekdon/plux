@@ -1,14 +1,15 @@
 #include "test.hh"
 #include "script_run.hh"
 
-class TestScriptEnv : public plux::ScriptEnv,
-                      public TestSuite {
+class TestShellEnvImpl : public plux::ShellEnvImpl,
+                         public TestSuite {
 public:
-    TestScriptEnv(const plux::env_map& env)
-        :  plux::ScriptEnv(env),
-           TestSuite("ScriptEnv")
+    TestShellEnvImpl(const plux::env_map& env)
+        :  plux::ShellEnvImpl(env),
+           TestSuite("ShellEnvImpl")
     {
-        register_test("get_env", std::bind(&TestScriptEnv::test_get_env, this));
+        register_test("get_env",
+                      std::bind(&TestShellEnvImpl::test_get_env, this));
     }
 
     void test_get_env()
@@ -49,7 +50,7 @@ int main(int argc, char* argv[])
 {
     try {
         plux::env_map env = {{"key", "os-val"}};
-        TestScriptEnv test_script_env(env);
+        TestShellEnvImpl test_shell_env_impl(env);
         TestSuite::main(argc, argv);
         return 0;
     } catch (plux::PluxException& ex) {

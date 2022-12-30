@@ -75,7 +75,7 @@ public:
     void test_expand_var()
     {
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
         env.set_env("", "WHERE", plux::VAR_SCOPE_GLOBAL, "world");
         env.set_env("", "with space", plux::VAR_SCOPE_GLOBAL, "planet");
         env.set_env("", "glob1", plux::VAR_SCOPE_GLOBAL, "value");
@@ -141,7 +141,7 @@ public:
     {
         ShellCtxTest ctx;
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
 
         ASSERT_EQUAL("run", plux::RES_ERROR, run(ctx, env).status());
         env.set_env("", "key", plux::VAR_SCOPE_GLOBAL, "any");
@@ -191,7 +191,7 @@ public:
     {
         ShellCtxTest ctx;
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
 
         std::string val;
         ASSERT_EQUAL("run", plux::RES_OK, run(ctx, env).status());
@@ -218,7 +218,7 @@ public:
     {
         ShellCtxTest ctx;
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
 
         std::string val;
         ASSERT_EQUAL("run", plux::RES_OK, run(ctx, env).status());
@@ -244,7 +244,7 @@ public:
     {
         ShellCtxTest ctx;
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
         env.set_env("", "glob1", plux::VAR_SCOPE_GLOBAL, "value");
 
         set_output("plain\n");
@@ -274,7 +274,7 @@ public:
     void test_match()
     {
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
         env.set_env("", "VALUE", plux::VAR_SCOPE_GLOBAL, "world");
 
         set_pattern("SH-PROMPT:");
@@ -304,7 +304,7 @@ public:
     void test_match()
     {
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
 
         set_pattern("SH-PROMPT:");
         ASSERT_EQUAL("match full", true,
@@ -364,7 +364,7 @@ public:
     {
         ShellCtxTest ctx;
         plux::env_map os_env;
-        plux::ScriptEnv env(os_env);
+        plux::ShellEnvImpl env(os_env);
         ASSERT_EQUAL("run", plux::RES_OK, run(ctx, env).status());
         ASSERT_EQUAL("run", _timeout_ms, ctx.timeout());
     }

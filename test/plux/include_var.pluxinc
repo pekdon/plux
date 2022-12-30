@@ -1,0 +1,5 @@
+[doc]
+to be included from include.plux test
+[enddoc]
+
+[global included_var=was-included]

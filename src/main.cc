@@ -59,8 +59,8 @@ static int dump_script(plux::Script* script)
     std::cout << std::endl << "CLEANUP" << std::endl;
     dump_lines(script->cleanup_begin(), script->cleanup_end());
     std::cout << std::endl << "FUNCTIONS" << std::endl;
-    auto it = script->fun_begin();
-    for (; it != script->fun_end(); ++it) {
+    auto it = script->env().fun_begin();
+    for (; it != script->env().fun_end(); ++it) {
         std::cout << std::endl << it->first << std::endl << std::endl;
         dump_lines(it->second->line_begin(), it->second->line_end());
     }
@@ -111,7 +111,8 @@ static int run_file(int opt_dump, enum plux::log_level opt_log_level,
     int exitcode = 1;
     std::istream is(&fb);
     try {
-        plux::ScriptParse script_parse(file, &is);
+        plux::ScriptEnv script_env;
+        plux::ScriptParse script_parse(file, &is, script_env);
         auto script = script_parse.parse();
 
         if (opt_dump) {

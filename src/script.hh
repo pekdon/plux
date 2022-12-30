@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "shell_ctx.hh"
+#include "script_env.hh"
 
 namespace plux
 {
@@ -36,95 +37,6 @@ namespace plux
         /** Error message. */
         std::string _error;
     };
-
-    /**
-     * Status code from line.
-     */
-    enum line_status {
-        RES_OK,
-        RES_ERROR,
-        RES_NO_MATCH,
-        RES_CALL,
-        RES_TIMEOUT
-    };
-
-    /**
-     * Result from line.
-     */
-    class LineRes {
-    public:
-        typedef std::vector<std::string>::const_iterator arg_it;
-
-        LineRes(enum line_status status)
-            : _status(status)
-        {
-        }
-        LineRes(enum line_status status,
-                const std::string& fun, std::vector<std::string> args)
-            : _status(status),
-              _fun(fun),
-              _args(args)
-        {
-        }
-        ~LineRes(void) { }
-
-        enum line_status status(void) const { return _status; }
-        const std::string& fun(void) const { return _fun; }
-
-        bool operator==(enum line_status status) const {
-            return _status == status;
-        }
-        bool operator!=(enum line_status status) const {
-            return _status != status;
-        }
-
-        arg_it arg_begin(void) const { return _args.begin(); }
-        arg_it arg_end(void) const { return _args.end(); }
-
-    private:
-        enum line_status _status;
-        std::string _fun;
-        std::vector<std::string> _args;
-    };
-
-    /**
-     * Any line in headers or in shell or cleanup.
-     */
-    class Line {
-    public:
-        Line(const std::string& file, unsigned int line,
-             const std::string& shell)
-            : _file(file),
-              _line(line),
-              _shell(shell)
-        {
-        }
-        virtual ~Line(void) { }
-
-        const std::string& file(void) const { return _file; }
-        unsigned int line(void) const { return _line; }
-        const std::string& shell(void) const { return _shell; }
-
-        virtual LineRes run(ShellCtx& ctx, ShellEnv& env) = 0;
-        virtual std::string to_string(void) const = 0;
-
-    protected:
-        std::string expand_var(ShellEnv& env, const std::string& shell,
-                               const std::string& str);
-        void append_var_val(ShellEnv& env, const std::string& shell,
-                            std::string& exp_str, const std::string& var);
-
-    private:
-        /** file line was parsed in. */
-        const std::string &_file;
-        /** file line number. */
-        unsigned int _line;
-        /** shell line applies to, can be empty. */
-        std::string _shell;
-    };
-
-    typedef std::vector<Line*> line_vector;
-    typedef line_vector::const_iterator line_it;
 
     /**
      * Any header in the script, between documentation tag and
@@ -165,60 +77,20 @@ namespace plux
      * [include path]
      */
     class HeaderInclude : public Header {
-        using Header::Header;
-
-        virtual std::string to_string(void) const override {
-            return "HeaderInclude";
-        }
-    };
-
-    /**
-     * Function.
-     */
-    class Function {
     public:
-        Function(const std::string& file,  unsigned int line,
-                 const std::string& name, std::vector<std::string> args)
-            : _file(file),
-              _line(line),
-              _name(name),
-              _args(args)
+        HeaderInclude(const std::string& file, unsigned int line,
+                      const std::string& include_file)
+            : Header(file, line, ""),
+              _include_file(include_file)
         {
         }
-        virtual ~Function(void) { }
+        virtual ~HeaderInclude(void) { }
 
-        const std::string& file(void) const { return _file; }
-        unsigned int line(void) const { return _line; }
-        const std::string& name(void) const { return _name; }
-
-        int num_args(void) const { return _args.size(); }
-        std::vector<std::string>::const_iterator args_begin(void) const {
-            return _args.begin();
-        }
-        std::vector<std::string>::const_iterator args_end(void) const {
-            return _args.end();
-        }
-
-        line_it line_begin(void) const { return _lines.begin(); }
-        line_it line_end(void) const { return _lines.end(); }
-        void line_add(Line* line) { _lines.push_back(line); }
-
+        virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
+        virtual std::string to_string(void) const override;
     private:
-        /** file line was parsed in. */
-        const std::string &_file;
-        /** file line number. */
-        unsigned int _line;
-        /** function name. */
-        std::string _name;
-        /** function argument names. */
-        std::vector<std::string> _args;
-
-        /** function content, individual script lines. */
-        line_vector _lines;
+        std::string _include_file;
     };
-
-    typedef std::map<std::string, Function*> fun_map;
-    typedef fun_map::const_iterator fun_it;
 
     /**
      * Macro.
@@ -499,10 +371,11 @@ namespace plux
      */
     class Script {
     public:
-        Script(const std::string& file);
+        Script(const std::string& file, ScriptEnv& env);
         ~Script(void);
 
         const std::string& file(void) const { return _file; }
+        ScriptEnv& env(void) const { return _env; }
         const std::string& name(void) const { return _name; }
         const std::string& doc(void) const { return _doc; }
         void set_doc(const std::string& doc) { _doc = doc; }
@@ -510,17 +383,6 @@ namespace plux
         line_it header_begin(void) const { return _headers.begin(); }
         line_it header_end(void) const { return _headers.end(); }
         void header_add(Line* header) { _headers.push_back(header); }
-
-        Function* get_fun(const std::string& name) const {
-            auto it = _funs.find(name);
-            return it == _funs.end() ? nullptr : it->second;
-        }
-        void fun_add(const std::string& name, Function* fun) {
-            delete get_fun(name);
-            _funs[name] = fun;
-        }
-        fun_it fun_begin(void) const { return _funs.begin(); }
-        fun_it fun_end(void) const { return _funs.end(); }
 
         line_it line_begin(void) const { return _lines.begin(); }
         line_it line_end(void) const { return _lines.end(); }
@@ -533,6 +395,8 @@ namespace plux
     private:
         /** starting point for file. */
         std::string _file;
+        /** global script environment. */
+        ScriptEnv& _env;
         /** name of the script (basename - .plux ending) */
         std::string _name;
         /** script documentation header */
@@ -540,8 +404,6 @@ namespace plux
 
         /** script headers, include and config directives */
         line_vector _headers;
-        /** map from function name to function. */
-        std::map<std::string, Function*> _funs;
         /** shell lines */
         line_vector _lines;
         /** lines for the cleanup section. */

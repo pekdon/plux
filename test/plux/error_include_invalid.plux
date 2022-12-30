@@ -1,0 +1,5 @@
+[doc]
+Test include of file with syntax error (error)
+[enddoc]
+
+[include include_invalid.pluxinc]

@@ -9,6 +9,7 @@ set(libplux_SOURCES
   plux.cc
   regex.cc
   script.cc
+  script_env.cc
   script_parse.cc
   script_run.cc
   shell.cc

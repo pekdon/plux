@@ -85,7 +85,8 @@ namespace plux
      */
     class ScriptParse {
     public:
-        ScriptParse(const std::string& path, std::istream* is);
+        ScriptParse(const std::string& path, std::istream* is,
+                    ScriptEnv& env);
 
         std::unique_ptr<Script> parse(void);
 
@@ -99,6 +100,7 @@ namespace plux
         Line* parse_header_cmd(const ScriptParseCtx& ctx);
         Line* parse_line_cmd(const ScriptParseCtx& ctx);
 
+        Line* parse_include(const ScriptParseCtx& ctx);
         Line* parse_config(const ScriptParseCtx& ctx);
         Line* parse_global(const ScriptParseCtx& ctx);
         Line* parse_local(const ScriptParseCtx& ctx);
@@ -122,6 +124,8 @@ namespace plux
         std::string _path;
         /** Opened input stream for path. */
         std::istream* _is;
+        /** Global script environment. */
+        ScriptEnv& _env;
         /** Current line number. */
         unsigned int _linenumber;
 

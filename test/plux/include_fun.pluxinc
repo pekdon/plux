@@ -1,0 +1,7 @@
+[doc]
+to be included from include.plux test
+[enddoc]
+
+[function included-fun output]
+	!echo output ${output}
+[endfunction]

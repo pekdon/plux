@@ -83,8 +83,8 @@ public:
 class TestScriptParse : public plux::ScriptParse,
                         public TestSuite {
 public:
-    TestScriptParse(std::istream* is)
-        : plux::ScriptParse(":memory:", is),
+    TestScriptParse(std::istream* is, plux::ScriptEnv& script_env)
+            : plux::ScriptParse(":memory:", is, script_env),
           TestSuite("ScriptParse")
     {
         register_test("next_line",
@@ -412,7 +412,8 @@ int main(int argc, char* argv[])
 {
     TestScriptParseCtx test_script_parse_ctx;
     std::istringstream is("");
-    TestScriptParse test_script_parse(&is);
+    plux::ScriptEnv script_env;
+    TestScriptParse test_script_parse(&is, script_env);
 
     try {
         return TestSuite::main(argc, argv);
