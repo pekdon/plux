@@ -40,7 +40,7 @@ namespace plux
 
     private:
         /** file line was parsed in. */
-        const std::string &_file;
+        const std::string _file;
         /** file line number. */
         unsigned int _line;
         /** function name. */
