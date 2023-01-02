@@ -266,6 +266,15 @@ public:
         ASSERT_EQUAL("call, args", "args", cline->name());
         ASSERT_EQUAL("call, args", 2, cline->num_args());
         delete line;
+
+        line = parse_line_cmd(ctx("[call quoted-args \"quoted with space\"]"));
+        cline = dynamic_cast<plux::LineCall*>(line);
+        ASSERT_EQUAL("call, quoted-args", true, cline != nullptr);
+        ASSERT_EQUAL("call, quoted-args", "quoted-args", cline->name());
+        ASSERT_EQUAL("call, quoted-args", 1, cline->num_args());
+        ASSERT_EQUAL("call, quoted-args", "quoted with space", cline->arg(0));
+        delete line;
+
     }
 
     void test_parse_line_cmd_output()

@@ -2,6 +2,7 @@
 
 #include "regex.hh"
 #include "script_parse.hh"
+#include "str.hh"
 
 namespace plux
 {
@@ -389,18 +390,9 @@ namespace plux
                                  std::string::size_type start,
                                  std::vector<std::string> &args)
     {
-        auto arg_start = ctx.line.find_first_not_of(" \t", start);
-        auto arg_end = ctx.line.find_first_of(" \t", arg_start);
-        while (arg_end != std::string::npos) {
-            auto arg = ctx.line.substr(arg_start, arg_end - arg_start);
-            args.push_back(arg);
-            arg_start = ctx.line.find_first_not_of(" \t", arg_end);
-            arg_end = ctx.line.find_first_of(" \t", arg_start);
-        }
-
-        auto arg = ctx.line.substr(arg_start,
-                                   ctx.line.size() - 1 - arg_start);
-        args.push_back(arg);
+        start = ctx.line.find_first_not_of(" \t", start);
+        auto end = ctx.line.size() - (ctx.ends_with("]") ? 1 : 0);
+        str_split(ctx.line.substr(start, end - start), args);
     }
 
     /**

@@ -37,6 +37,14 @@ set_target_properties(test_script_run PROPERTIES
 target_include_directories(test_script_run PUBLIC ${common_INCLUDE_DIRS})
 target_link_libraries(test_script_run libplux ${common_LIBRARIRES})
 
+add_executable(test_str test_str.cc)
+add_test(str test_script_run)
+set_target_properties(test_str PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED ON)
+target_include_directories(test_str PUBLIC ${common_INCLUDE_DIRS})
+target_link_libraries(test_str libplux ${common_LIBRARIRES})
+
 add_executable(test_timeout test_timeout.cc)
 add_test(timeout test_timeout)
 set_target_properties(test_timeout PROPERTIES

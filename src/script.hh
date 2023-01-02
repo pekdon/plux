@@ -186,6 +186,12 @@ namespace plux
 
         const std::string& name(void) const { return _name; }
         size_t num_args(void) const { return _args.size(); }
+        const std::string& arg(size_t idx) const {
+            if (idx >= _args.size()) {
+                return plux::empty_string;
+            }
+            return _args[idx];
+        }
         const std::vector<std::string>::const_iterator args_begin(void) const {
             return _args.begin();
         }

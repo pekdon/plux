@@ -24,6 +24,7 @@ set(libplux_SOURCES
   shell.cc
   shell_ctx.cc
   shell_log.cc
+  str.cc
   timeout.cc)
 
 add_library(libplux STATIC ${libplux_SOURCES})
