@@ -296,7 +296,7 @@ namespace plux
             // function not loaded, look for a builting function
             auto it = builtin_funs.find(lres.fun());
             if (it != builtin_funs.end()) {
-                std::string filename = PLUX_STDLIB_PATH "/" + it->second;
+                std::string filename = _cfg.stdlib_dir() + "/" + it->second;
                 _log << "ScriptRun" << "include builtin " << lres.fun()
                      << " from " << filename << LOG_LEVEL_TRACE;
                 auto res = run_include(line, filename);
