@@ -41,6 +41,8 @@ namespace plux
         }
     };
 
+    std::string format_timestamp(void);
+
     extern const unsigned int default_timeout_ms;
     extern const std::string empty_string;
     extern const std::map<std::string, std::string> default_env;

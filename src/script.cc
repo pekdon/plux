@@ -151,7 +151,8 @@ namespace plux
 
     LineRes LineLog::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::cout << expand_var(env, ctx.name(), msg()) << std::endl;
+        std::cout << format_timestamp() << ": "
+                  << expand_var(env, ctx.name(), msg()) << std::endl;
         return RES_OK;
     }
 

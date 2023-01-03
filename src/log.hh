@@ -61,9 +61,6 @@ namespace plux
                            const std::string& full_msg) = 0;
 
     private:
-        std::string format_timestamp(void);
-
-    private:
         enum log_level _level;
 
         std::string _msg_src;

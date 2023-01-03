@@ -4,10 +4,6 @@
 #include "log.hh"
 #include "plux.hh"
 
-extern "C" {
-#include <time.h>
-}
-
 namespace plux
 {
     /**
@@ -96,17 +92,6 @@ namespace plux
         full_msg += ": ";
         full_msg += msg;
         write(level, full_msg);
-    }
-
-    std::string Log::format_timestamp(void)
-    {
-        time_t now = time(nullptr);
-        struct tm tm;
-        gmtime_r(&now, &tm);
-
-        char buf[20];
-        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm);
-        return std::string(buf);
     }
 
     Log& operator<<(Log& log, const std::string& msg)
