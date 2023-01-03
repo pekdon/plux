@@ -122,7 +122,8 @@ namespace plux
      *
      * @return true if line is a valid shell line, false if not a shell command.
      */
-    bool ScriptParse::parse_shell(ScriptParseCtx& ctx, std::string& shell_ret)
+    bool ScriptParse::parse_shell(const ScriptParseCtx& ctx,
+                                  std::string& shell_ret)
     {
         if (! ctx.starts_with("[shell ")) {
             return false;

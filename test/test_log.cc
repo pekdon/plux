@@ -12,6 +12,7 @@ public:
           TestSuite("Log")
     {
         register_test("operator", std::bind(&TestLog::test_operator, this));
+        register_test("warning", std::bind(&TestLog::test_warning, this));
     }
 
     virtual ~TestLog() { }
@@ -30,6 +31,13 @@ public:
         _lines.clear();
         *this << "Test" << "message" << plux::LOG_LEVEL_DEBUG;
         ASSERT_EQUAL("under level", 0, _lines.size());
+    }
+
+    void test_warning()
+    {
+        warning("Test", "warning message");
+        ASSERT_EQUAL("warning",
+                     "WARNING Test: warning message", _lines[0].substr(20));
     }
 
 protected:

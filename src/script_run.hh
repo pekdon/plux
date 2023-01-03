@@ -18,14 +18,15 @@ namespace plux
          * Default construct, OK result.
          */
         ScriptResult(void)
-            : _res(RES_OK)
+            : _res(RES_OK),
+              _line(nullptr)
         {
         }
 
         /**
          * Error on Line.
          */
-        ScriptResult(LineRes res, const Line* line,
+        ScriptResult(const LineRes& res, const Line* line,
                      const std::string& error,
                      const std::vector<std::string>& stack)
             : _res(res),
@@ -69,7 +70,7 @@ namespace plux
      */
     class ShellEnvImpl : public ShellEnv {
     public:
-        ShellEnvImpl(const env_map& env);
+        explicit ShellEnvImpl(const env_map& env);
         virtual ~ShellEnvImpl(void);
 
         virtual bool get_env(const std::string& shell, const std::string& key,
@@ -119,7 +120,7 @@ namespace plux
 
     class ScriptException : public PluxException {
     public:
-        ScriptException(const std::string& error) throw();
+        explicit ScriptException(const std::string& error) throw();
         virtual ~ScriptException(void) throw();
 
         virtual std::string info(void) const override { return _error; }
@@ -148,7 +149,7 @@ namespace plux
         ScriptResult run_headers(line_it it, line_it end);
         ScriptResult run_lines(line_it it, line_it end);
         ScriptResult run_line(Line* line);
-        ScriptResult run_function(LineRes& lres, const Line* line,
+        ScriptResult run_function(const LineRes& lres, const Line* line,
                                   const std::string& shell);
         ScriptResult run_function(Function* fun, const std::string& shell,
                                   LineRes::arg_it arg_begin,
@@ -168,7 +169,7 @@ namespace plux
         void push_function(Function* fun, const std::string& shell);
         void pop_function(Function* fun, const std::string& shell);
 
-        ScriptResult script_error(LineRes res, const Line* line,
+        ScriptResult script_error(const LineRes& res, const Line* line,
                                   std::string info);
 
     private:

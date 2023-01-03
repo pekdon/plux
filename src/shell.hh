@@ -42,7 +42,7 @@ namespace plux
 
         Shell(Log& log,
               ShellLog* shell_log,
-              ProgressLog&,
+              ProgressLog& progress_log,
               const std::string& name,
               const std::string& command,
               ShellEnv& shell_env);
@@ -52,6 +52,7 @@ namespace plux
         void stop(void);
 
         virtual const std::string& name(void) const override { return _name; }
+        virtual void progress_log(const std::string& msg) override;
 
         const std::string& error_pattern(void) const { return _error_pattern; }
         virtual void set_error_pattern(const std::string& pattern) override {
@@ -95,13 +96,15 @@ namespace plux
         void match_error(const std::string& line, bool is_line);
 
         void stop_pid(pid_t pid);
-        void log_and_throw_strerror(std::string msg);
+        void log_and_throw_strerror(const std::string& msg);
 
     private:
         /** Application log. */
         Log& _log;
         /** Shell IO log. */
         ShellLog* _shell_log;
+        /** Progress log. */
+        ProgressLog& _progress_log;
 
         /** Shell name. */
         std::string _name;

@@ -5,8 +5,6 @@
 #include "script.hh"
 #include "script_parse.hh"
 
-#define IS_VAR_CHAR(c) (isalnum((c)) || (c) == '_')
-
 namespace plux
 {
     ScriptError::ScriptError(const std::string& shell,
@@ -20,91 +18,14 @@ namespace plux
     {
     }
 
-    std::string Line::expand_var(ShellEnv& env, const std::string& shell,
-                                 const std::string& line)
-    {
-        std::string exp_line;
-
-        bool in_var = false;
-        bool var_curly = false;
-        std::string var_name;
-
-        auto it(line.begin());
-        auto last(line.end() - 1);
-        for (; it != line.end(); ++it) {
-            if (in_var) {
-                if (var_curly) {
-                    if (*it == '}') {
-                        in_var = false;
-                        append_var_val(env, shell, exp_line, var_name);
-                    } else {
-                        var_name += *it;
-                    }
-                } else if (IS_VAR_CHAR(*it)) {
-                    var_name += *it;
-                } else {
-                    in_var = false;
-                    append_var_val(env, shell, exp_line, var_name);
-                    exp_line += *it;
-                }
-            } else if (*it == '$') {
-                if (it == last) {
-                    // last character
-                    exp_line += '$';
-                } else {
-                    // skip to next character, determines variable
-                    // type.
-                    ++it;
-
-                    if (*it == '$') {
-                        exp_line += '$';
-                    } else if (*it == '{') {
-                        in_var = true;
-                        var_curly = true;
-                        var_name = "";
-                    } else if (IS_VAR_CHAR(*it)) {
-                        in_var = true;
-                        var_curly = false;
-                        var_name = *it;
-                    } else {
-                        throw ScriptError(shell, "empty variable name");
-                    }
-                }
-            } else {
-                exp_line += *it;
-            }
-        }
-
-        if (in_var) {
-            if (var_curly) {
-                throw ScriptError(shell, "end of line while scanning for }");
-            }
-            append_var_val(env, shell, exp_line, var_name);
-        }
-
-        return exp_line;
-    }
-
-    void Line::append_var_val(ShellEnv& env, const std::string& shell,
-                              std::string& exp_str, const std::string& var)
-    {
-        std::string var_val;
-        if (var.empty()) {
-            throw ScriptError(shell, "empty variable name");
-        } else if (! env.get_env(shell, var, var_val)) {
-            throw UndefinedException(shell, "variable", var);
-        }
-        exp_str += var_val;
-    }
-
     LineRes HeaderConfigRequire::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::string val;
-        if (env.get_env("", _key, val)
-            && (_val.empty() || _val == val)) {
-            return RES_OK;
+        std::string env_val;
+        if (env.get_env("", _key, env_val)
+            && (_val.empty() || _val == env_val)) {
+            return LineRes(RES_OK);
         }
-        return RES_ERROR;
+        return LineRes(RES_ERROR);
     }
 
     std::string HeaderConfigRequire::to_string(void) const
@@ -130,7 +51,7 @@ namespace plux
     {
         auto exp_val = expand_var(env, ctx.name(), val());
         env.set_env("", key(), VAR_SCOPE_GLOBAL, exp_val);
-        return RES_OK;
+        return LineRes(RES_OK);
     }
 
     std::string LineVarAssignGlobal::to_string(void) const
@@ -140,8 +61,9 @@ namespace plux
 
     LineRes LineProgress::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::cout << expand_var(env, ctx.name(), msg()) << std::endl;
-        return RES_OK;
+        std::string progress_msg = expand_var(env, ctx.name(), msg());
+        ctx.progress_log(progress_msg);
+        return LineRes(RES_OK);
     }
 
     std::string LineProgress::to_string(void) const
@@ -151,9 +73,9 @@ namespace plux
 
     LineRes LineLog::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::cout << format_timestamp() << ": "
-                  << expand_var(env, ctx.name(), msg()) << std::endl;
-        return RES_OK;
+        std::string log_msg = expand_var(env, ctx.name(), msg());
+        ctx.progress_log(log_msg);
+        return LineRes(RES_OK);
     }
 
     std::string LineLog::to_string(void) const
@@ -163,12 +85,13 @@ namespace plux
 
     LineRes LineCall::run(ShellCtx& ctx, ShellEnv& env)
     {
-        auto name = expand_var(env, ctx.name(), _name);
+        auto fun_name = expand_var(env, ctx.name(), _name);
         std::vector<std::string> args;
-        for (auto arg : _args) {
-            args.push_back(expand_var(env, ctx.name(), arg));
-        }
-        return LineRes(RES_CALL, name, args);
+        std::transform(_args.begin(), _args.end(), std::back_inserter(args),
+                       [this, &ctx, &env](const std::string& arg) {
+                           return expand_var(env, ctx.name(), arg);
+                       });
+        return LineRes(RES_CALL, fun_name, args);
     }
 
     std::string LineCall::to_string(void) const
@@ -178,9 +101,9 @@ namespace plux
 
     LineRes LineSetErrorPattern::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::string pattern = expand_var(env, ctx.name(), _pattern);
-        ctx.set_error_pattern(pattern);
-        return RES_OK;
+        std::string error_pattern = expand_var(env, ctx.name(), _pattern);
+        ctx.set_error_pattern(error_pattern);
+        return LineRes(RES_OK);
     }
 
     std::string LineSetErrorPattern::to_string(void) const
@@ -192,7 +115,7 @@ namespace plux
     {
         auto exp_val = expand_var(env, ctx.name(), val());
         env.set_env(ctx.name(), key(), VAR_SCOPE_SHELL, exp_val);
-        return RES_OK;
+        return LineRes(RES_OK);
     }
 
     std::string LineVarAssignShell::to_string(void) const
@@ -202,9 +125,9 @@ namespace plux
 
     LineRes LineOutput::run(ShellCtx& ctx, ShellEnv& env)
     {
-        std::string output = expand_var(env, shell(), _output);
-        ctx.input(output);
-        return RES_OK;
+        std::string expanded_output = expand_var(env, shell(), _output);
+        ctx.input(expanded_output);
+        return LineRes(RES_OK);
     }
 
     std::string LineOutput::to_string(void) const
@@ -216,7 +139,7 @@ namespace plux
     LineRes LineTimeout::run(ShellCtx& ctx, ShellEnv& env)
     {
         ctx.set_timeout(timeout());
-        return RES_OK;
+        return LineRes(RES_OK);
     }
 
     std::string LineTimeout::to_string(void) const

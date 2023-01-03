@@ -24,10 +24,10 @@ namespace plux
         const std::string& shell(void) const { return _shell; }
         const std::string& error(void) const { return _error; }
 
-        virtual std::string info(void) const {
+        virtual std::string info(void) const override {
             return _error;
         }
-        virtual std::string to_string(void) const {
+        virtual std::string to_string(void) const override {
             return "ScriptError: " + _shell + " " + _error;
         }
 
@@ -174,9 +174,10 @@ namespace plux
               _name(name)
         {
         }
-        LineCall(const std::string& file,  unsigned int line,
+        LineCall(const std::string& file, unsigned int line,
                  const std::string& shell,
-                 const std::string& name, std::vector<std::string> args)
+                 const std::string& name,
+                 const std::vector<std::string>& args)
             : Line(file, line, shell),
               _name(name),
               _args(args)

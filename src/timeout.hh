@@ -8,7 +8,7 @@ namespace plux
 {
     class Timeout {
     public:
-        Timeout(unsigned int timeout_ms);
+        explicit Timeout(unsigned int timeout_ms);
 
         void restart(void);
 

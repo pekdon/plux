@@ -47,25 +47,20 @@ namespace plux
         _output.flush();
     }
 
+    /**
+     * File based progress log for plux execution.
+     */
     FileProgressLog::FileProgressLog(const std::string& path)
     {
+        _log.open(path);
     }
 
     FileProgressLog::~FileProgressLog(void)
     {
+        _log.close();
     }
 
     void FileProgressLog::log(const std::string& shell, const std::string& msg)
-    {
-    }
-
-    void FileProgressLog::progress_start(const std::string& shell,
-                                         const std::string& msg)
-    {
-    }
-
-    void FileProgressLog::progress_stop(const std::string& shell,
-                                        const std::string& msg)
     {
     }
 }

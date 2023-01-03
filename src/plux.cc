@@ -30,19 +30,21 @@ namespace plux
     }
 
     /**
-     * Get basename from path (not using reference, char* signature).
+     * Get basename from path.
      */
-    std::string path_basename(std::string path)
+    std::string path_basename(const std::string& path)
     {
-        return basename(const_cast<char*>(path.c_str()));
+        std::string path_copy(path);
+        return basename(const_cast<char*>(path_copy.c_str()));
     }
 
     /**
-     * Get dirname from path (not using reference, char* signature).
+     * Get dirname from path.
      */
-    std::string path_dirname(std::string path)
+    std::string path_dirname(const std::string& path)
     {
-        return dirname(const_cast<char*>(path.c_str()));
+        std::string path_copy(path);
+        return dirname(const_cast<char*>(path_copy.c_str()));
     }
 
     /**

@@ -126,30 +126,30 @@ public:
 
     void test_next_line()
     {
-        plux::ScriptParseCtx ctx;
+        plux::ScriptParseCtx parse_ctx;
 
         // ensure that last line (without newline) is parsed
         std::istringstream is1("last line");
         set_is(&is1);
-        ASSERT_EQUAL("last line", true, next_line(ctx));
-        ASSERT_EQUAL("last line", "last line", ctx.line);
-        ASSERT_EQUAL("last line", false, next_line(ctx));
+        ASSERT_EQUAL("last line", true, next_line(parse_ctx));
+        ASSERT_EQUAL("last line", "last line", parse_ctx.line);
+        ASSERT_EQUAL("last line", false, next_line(parse_ctx));
 
         // parse line with only - on it
         std::istringstream is2("     -\n     !test\n");
         set_is(&is2);
-        ASSERT_EQUAL("only -", true, next_line(ctx));
-        ASSERT_EQUAL("only -", "     -", ctx.line);
-        ASSERT_EQUAL("only -", true, next_line(ctx));
-        ASSERT_EQUAL("only -", "     !test", ctx.line);
-        ASSERT_EQUAL("only -", false, next_line(ctx));
+        ASSERT_EQUAL("only -", true, next_line(parse_ctx));
+        ASSERT_EQUAL("only -", "     -", parse_ctx.line);
+        ASSERT_EQUAL("only -", true, next_line(parse_ctx));
+        ASSERT_EQUAL("only -", "     !test", parse_ctx.line);
+        ASSERT_EQUAL("only -", false, next_line(parse_ctx));
 
         // skip blank/empty lines and comments
         std::istringstream is3("\n     \n     #test\nlast");
         set_is(&is3);
-        ASSERT_EQUAL("skip blank", true, next_line(ctx));
-        ASSERT_EQUAL("skip blank", "last", ctx.line);
-        ASSERT_EQUAL("skip blank", false, next_line(ctx));
+        ASSERT_EQUAL("skip blank", true, next_line(parse_ctx));
+        ASSERT_EQUAL("skip blank", "last", parse_ctx.line);
+        ASSERT_EQUAL("skip blank", false, next_line(parse_ctx));
     }
 
     void test_parse()

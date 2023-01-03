@@ -44,28 +44,27 @@ namespace plux
 
     Shell::Shell(Log& log,
                  ShellLog* shell_log,
-                 ProgressLog&,
+                 ProgressLog& progress_log,
                  const std::string& name,
                  const std::string& command,
                  ShellEnv& shell_env)
         : _log(log),
           _shell_log(shell_log),
+          _progress_log(progress_log),
           _name(name),
           _timeout_ms(plux::default_timeout_ms),
           _command(command),
           _shell_env(shell_env),
           _buf_matched(false),
           _fd(-1),
-          _pid(-1)
+          _pid(forkpty(&_fd, nullptr, nullptr, nullptr))
+
     {
-        int master;
-        pid_t pid = forkpty(&master, nullptr /* name */,
-                            nullptr /* termp */, nullptr /* winp */);
-        if (pid < 0) {
+        if (_pid < 0) {
             log_and_throw_strerror("forkpty failed");
         }
 
-        if (pid == 0) {
+        if (_pid == 0) {
             env_map_const_it it(_shell_env.os_begin());
             for (; it != _shell_env.os_end(); ++it) {
                 setenv(it->first.c_str(), it->second.c_str(),
@@ -78,18 +77,15 @@ namespace plux
             exit(1);
         }
 
-        int flags = fcntl(master, F_GETFL, 0);
+        int flags = fcntl(_fd, F_GETFL, 0);
         if (flags == -1) {
-            stop_pid(pid);
+            stop_pid(_pid);
             log_and_throw_strerror("failed to get flags from PTY fd");
         }
-        int ret = fcntl(master, F_SETFL, flags | O_NONBLOCK);
+        int ret = fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
         if (ret == -1) {
             log_and_throw_strerror("failed to set O_NONBLOCK flag on PTY fd");
         }
-
-        _fd = master;
-        _pid = pid;
     }
 
     Shell::~Shell(void)
@@ -97,11 +93,11 @@ namespace plux
         stop();
         kill(_pid, SIGKILL);
         int status;
-        auto pid = std::to_string(static_cast<int>(_pid));
-        _log.trace("shell", "waiting for pid " + pid + " to finish");
+        std::string pid_str = std::to_string(static_cast<int>(_pid));
+        _log.trace("shell", "waiting for pid " + pid_str + " to finish");
         waitpid(_pid, &status, 0);
-        _log.trace("shell", "pid " + std::to_string(static_cast<int>(_pid))
-                   + " finished with " + std::to_string(WEXITSTATUS(status)));
+        _log.trace("shell", "pid " + pid_str + " finished with "
+                   + std::to_string(WEXITSTATUS(status)));
     }
 
     void Shell::stop(void)
@@ -115,6 +111,15 @@ namespace plux
             close(_fd);
             _fd = -1;
         }
+    }
+
+    /**
+     * Progress log message.
+     */
+    void Shell::progress_log(const std::string& msg)
+    {
+        std::cout << format_timestamp() << ": " << msg << std::endl;
+        _progress_log.log(_name, msg);
     }
 
     /**
@@ -201,7 +206,7 @@ namespace plux
         }
     }
 
-    void Shell::log_and_throw_strerror(std::string msg)
+    void Shell::log_and_throw_strerror(const std::string& msg)
     {
         _log << "Shell" << msg << ": " << strerror(errno) << LOG_LEVEL_ERROR;
         throw ShellException(_name, msg);

@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "script_env.hh"
 #include "shell_ctx.hh"
 
 namespace plux
@@ -27,7 +26,7 @@ namespace plux
     public:
         typedef std::vector<std::string>::const_iterator arg_it;
 
-        LineRes(enum line_status status)
+        explicit LineRes(enum line_status status)
             : _status(status)
         {
         }
@@ -37,7 +36,7 @@ namespace plux
         {
         }
         LineRes(enum line_status status,
-                const std::string& fun, std::vector<std::string> args)
+                const std::string& fun, const std::vector<std::string>& args)
             : _status(status),
               _fun(fun),
               _args(args)
@@ -86,9 +85,9 @@ namespace plux
         virtual std::string to_string(void) const = 0;
 
     protected:
-        std::string expand_var(ShellEnv& env, const std::string& shell,
+        std::string expand_var(const ShellEnv& env, const std::string& shell,
                                const std::string& str);
-        void append_var_val(ShellEnv& env, const std::string& shell,
+        void append_var_val(const ShellEnv& env, const std::string& shell,
                             std::string& exp_str, const std::string& var);
 
     private:

@@ -4,7 +4,7 @@
 class TestShellEnvImpl : public plux::ShellEnvImpl,
                          public TestSuite {
 public:
-    TestShellEnvImpl(const plux::env_map& env)
+    explicit TestShellEnvImpl(const plux::env_map& env)
         :  plux::ShellEnvImpl(env),
            TestSuite("ShellEnvImpl")
     {

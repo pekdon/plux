@@ -3,6 +3,7 @@
 #include "test.hh"
 #include "script.hh"
 #include "script_run.hh"
+#include "shell_log.hh"
 
 /**
  * ShellCtx user for testing.
@@ -18,7 +19,7 @@ public:
     virtual ~ShellCtxTest() { }
 
     virtual const std::string& name() const override { return _name; }
-    void set_name(const std::string& name) { _name = name; }
+    virtual void progress_log(const std::string& msg) override { }
 
     unsigned int timeout() const override { return _timeout_ms; }
     virtual void set_timeout(unsigned int timeout_ms) override {
@@ -69,7 +70,7 @@ public:
     virtual ~TestLine() { }
 
     virtual plux::LineRes run(plux::ShellCtx& ctx, plux::ShellEnv& env) {
-        return plux::RES_ERROR;
+        return plux::LineRes(plux::RES_ERROR);
     }
 
     void test_expand_var()
@@ -121,7 +122,7 @@ public:
                                 "hello ${with space} and $WHERE"));
     }
 
-    virtual std::string to_string() const { return "TestLine"; }
+    virtual std::string to_string() const override { return "TestLine"; }
 };
 
 class TestHeaderConfigRequire : public plux::HeaderConfigRequire,
@@ -170,7 +171,7 @@ public:
     virtual std::string to_string() const override { return "TestScriptLine"; }
     virtual plux::LineRes run(plux::ShellCtx& ctx,
                               plux::ShellEnv& env) override {
-        return plux::RES_ERROR;
+        return plux::LineRes(plux::RES_ERROR);
     }
 };
 

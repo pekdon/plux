@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,8 +13,9 @@ namespace plux
      */
     class Function {
     public:
-        Function(const std::string& file,  unsigned int line,
-                 const std::string& name, std::vector<std::string> args)
+        Function(const std::string& file, unsigned int line,
+                 const std::string& name,
+                 const std::vector<std::string>& args)
             : _file(file),
               _line(line),
               _name(name),

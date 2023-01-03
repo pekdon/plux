@@ -81,7 +81,8 @@ namespace plux
         virtual ~LogFile(void);
 
     protected:
-        virtual void write(enum log_level level, const std::string& full_msg);
+        virtual void write(enum log_level level,
+                           const std::string& full_msg) override;
 
     private:
         std::string _path;

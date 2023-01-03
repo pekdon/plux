@@ -43,8 +43,8 @@ namespace plux
 
     std::string format_timestamp(void);
 
-    std::string path_basename(std::string path);
-    std::string path_dirname(std::string path);
+    std::string path_basename(const std::string& path);
+    std::string path_dirname(const std::string& path);
     std::string path_join(const std::string& p1, const std::string& p2);
 
     extern const unsigned int default_timeout_ms;

@@ -220,7 +220,7 @@ namespace plux
                 }
             } catch (const PluxException& ex) {
                 std::string info = ex.info();
-                return script_error(RES_ERROR, *it, info);
+                return script_error(LineRes(RES_ERROR), *it, info);
             }
         }
         return ScriptResult();
@@ -239,7 +239,7 @@ namespace plux
                 }
             } catch (const PluxException& ex) {
                 std::string info = ex.info();
-                return script_error(RES_ERROR, *it, info);
+                return script_error(LineRes(RES_ERROR), *it, info);
             }
         }
         return ScriptResult();
@@ -255,30 +255,30 @@ namespace plux
             throw ScriptException("stopped");
         }
 
-        auto shell_name = this->shell_name(line);
-        _log << "ScriptRun" << "run_line " << shell_name << " "
+        auto line_shell_name = this->shell_name(line);
+        _log << "ScriptRun" << "run_line " << line_shell_name << " "
              << line->to_string() << LOG_LEVEL_DEBUG;
 
-        auto shell = get_or_init_shell(shell_name);
+        auto shell = get_or_init_shell(line_shell_name);
         _timeout.set_timeout_ms(shell->timeout());
         _timeout.restart();
 
         LineRes lres(RES_OK);
         lres = line->run(*shell, _env);
-        while (lres == RES_NO_MATCH) {
+        while (lres.status() == RES_NO_MATCH) {
             int timeout_ms = _timeout.get_ms_until_timeout();
             if (timeout_ms == 0) {
-                lres = RES_TIMEOUT;
+                lres = LineRes(RES_TIMEOUT);
             } else {
-                lres = wait_for_input(timeout_ms);
-                if (lres == RES_OK) {
+                lres = LineRes(wait_for_input(timeout_ms));
+                if (lres.status() == RES_OK) {
                     lres = line->run(*shell, _env);
                 }
             }
         }
 
         if (lres == RES_CALL) {
-            return run_function(lres, line, shell_name);
+            return run_function(lres, line, line_shell_name);
         } else if (lres == RES_INCLUDE) {
             return run_include(line, lres.fun());
         } else if (lres != RES_OK) {
@@ -288,7 +288,7 @@ namespace plux
         }
     }
 
-    ScriptResult ScriptRun::run_function(LineRes& lres, const Line* line,
+    ScriptResult ScriptRun::run_function(const LineRes& lres, const Line* line,
                                          const std::string& shell)
     {
         auto fun = _script_env.fun_get(lres.fun());
@@ -301,6 +301,8 @@ namespace plux
                      << " from " << filename << LOG_LEVEL_TRACE;
                 auto res = run_include(line, filename);
                 if (res.status() != RES_OK) {
+                    _log << "ScriptRun" << "failed to include builtin"
+                         << filename << LOG_LEVEL_WARNING;
                     return res;
                 }
                 fun = _script_env.fun_get(lres.fun());
@@ -361,7 +363,7 @@ namespace plux
         std::string full_path = path_join(current_script_path(), filename);
         std::filebuf fb;
         if (! fb.open(full_path, std::ios::in)) {
-            return script_error(RES_ERROR, line,
+            return script_error(LineRes(RES_ERROR), line,
                                 "failed to include: " + filename);
         }
 
@@ -377,7 +379,7 @@ namespace plux
                 << ex.linenumber() << " "
                 << "error: " << ex.error() << " "
                 << "content: " << ex.line();
-            return script_error(RES_ERROR, line, oss.str());
+            return script_error(LineRes(RES_ERROR), line, oss.str());
         }
         return res;
 
@@ -456,8 +458,12 @@ namespace plux
     ShellLog* ScriptRun::init_shell_log(const std::string& name)
     {
         auto script_name = _scripts.front()->name();
-        auto path = _cfg.log_dir() + "/" + script_name + "_" + name;
-        _shell_logs.push_back(new FileShellLog(path, name, _tail));
+        if (name.size() == 0) {
+            _shell_logs.push_back(new NullShellLog());
+        } else {
+            auto path = _cfg.log_dir() + "/" + script_name + "_" + name;
+            _shell_logs.push_back(new FileShellLog(path, name, _tail));
+        }
         return _shell_logs.back();
     }
 
@@ -495,7 +501,7 @@ namespace plux
      * Create error script result from provided information,
      * including function call stack.
      */
-    ScriptResult ScriptRun::script_error(LineRes res, const Line* line,
+    ScriptResult ScriptRun::script_error(const LineRes& res, const Line* line,
                                          std::string info)
     {
         if (info.empty()) {

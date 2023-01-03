@@ -48,7 +48,10 @@ namespace plux
 
     class ScriptParseCtx {
     public:
-        ScriptParseCtx(void) { }
+        ScriptParseCtx(void)
+            : start(0)
+        {
+        }
         ~ScriptParseCtx(void) { }
 
         std::string line;
@@ -95,7 +98,7 @@ namespace plux
 
         bool next_line(ScriptParseCtx& ctx);
 
-        bool parse_shell(ScriptParseCtx& ctx, std::string& shell_ret);
+        bool parse_shell(const ScriptParseCtx& ctx, std::string& shell_ret);
 
         Line* parse_header_cmd(const ScriptParseCtx& ctx);
         Line* parse_line_cmd(const ScriptParseCtx& ctx);

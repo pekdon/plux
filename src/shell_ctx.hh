@@ -44,7 +44,7 @@ namespace plux
         const std::string& type(void) const { return _type; }
         const std::string& name(void) const { return _name; }
 
-        virtual std::string info(void) const {
+        virtual std::string info(void) const override {
             std::ostringstream buf("undefined ");
             buf << _type << " " << _name;
             if (! _shell.empty()) {
@@ -53,7 +53,7 @@ namespace plux
             return buf.str();
         }
 
-        virtual std::string to_string(void) const {
+        virtual std::string to_string(void) const override {
             return std::string("UndefinedException: ") + _shell + " " + _name;
         }
 
@@ -93,10 +93,11 @@ namespace plux
         typedef std::vector<std::string> line_vector;
         typedef line_vector::iterator line_it;
 
-        ShellCtx(void) { }
+        explicit ShellCtx(void) { }
         virtual ~ShellCtx(void) { }
 
         virtual const std::string& name(void) const = 0;
+        virtual void progress_log(const std::string& msg) = 0;
 
         /** Set error pattern for shell */
         virtual void set_error_pattern(const std::string& pattern) = 0;

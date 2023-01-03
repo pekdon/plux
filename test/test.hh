@@ -10,7 +10,7 @@
 
 class AssertFailed {
 public:
-    AssertFailed(std::string file, int line, std::string msg)
+    AssertFailed(const std::string& file, int line, const std::string& msg)
         : _file(file), _line(line), _msg(msg) {
     }
 
@@ -37,7 +37,7 @@ class TestSuite {
 public:
     typedef std::function<void()> test_fn;
 
-    TestSuite(const std::string& name)
+    explicit TestSuite(const std::string& name)
         : _name(name)
     {
          _suites.push_back(this);
@@ -46,14 +46,16 @@ public:
 
     static int main(int argc, char *argv[])
     {
-        bool status = true;
+        int status = 0;
 
         std::vector<TestSuite*>::iterator it(_suites.begin());
         for (; it != _suites.end(); ++it ) {
-            status = (*it)->test() && status;
+            if (! (*it)->test()) {
+                status = 1;
+            }
         }
 
-        return status ? 0 : 1;
+        return status;
     }
 
     const std::string& name() const { return _name; }

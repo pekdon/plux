@@ -73,7 +73,7 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
 {
     int exitcode = 1;
     plux::LogFile log(log_level, "plux.log");
-    auto progress_log = plux::FileProgressLog("plux.progress.log");
+    plux::FileProgressLog progress_log("plux.progress.log");
 
     plux::env_map env;
     fill_os_env(env);

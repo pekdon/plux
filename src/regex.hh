@@ -29,7 +29,7 @@ namespace plux
      */
     class sub_match {
     public:
-        sub_match(const std::string& str)
+        explicit sub_match(const std::string& str)
             : _str(str)
         {
         }
@@ -53,7 +53,7 @@ namespace plux
      */
     class regex_error : public std::runtime_error {
     public:
-        regex_error(const std::string& what)
+        explicit regex_error(const std::string& what)
             : std::runtime_error(what)
         {
         }
@@ -66,7 +66,7 @@ namespace plux
     class regex {
     public:
         regex(void);
-        regex(const std::string& pattern);
+        explicit regex(const std::string& pattern);
         regex(const regex& regex) = delete;
         ~regex(void);
 
