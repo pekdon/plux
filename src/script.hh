@@ -400,7 +400,7 @@ namespace plux
 
     private:
         /** starting point for file. */
-        std::string _file;
+        const std::string _file;
         /** global script environment. */
         ScriptEnv& _env;
         /** name of the script (basename - .plux ending) */

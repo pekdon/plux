@@ -1,0 +1,36 @@
+[doc]
+plux, testing plux scripts in plux folder.
+
+Verify plux scripts in the plux folder, some should fail etc so using plux
+to verify that the provided scripts run as expected.
+[enddoc]
+
+[global BIN_DIR=../build/src]
+
+[function match-file-ok file]
+	??$file
+	[log $file (expect ok)]
+	??$file: OK
+[endfunction]
+
+[function match-file-error file error]
+	??$file
+	[log $file (expect error)]
+	??$file: $error
+[endfunction]
+
+[shell plux]
+	?SH-PROMPT:
+	[log override PLUX_STDLIB_PATH]
+	!export PLUX_STDLIB_PATH=../stdlib
+	?SH-PROMPT:
+
+	!$BIN_DIR/plux `ls system/*.plux | env LC_ALL=C sort`
+	[call match-file-ok system/basic.plux]
+	[call match-file-error system/error.plux "Error sh1 error pattern sh1 matched"]
+	[call match-file-error system/error_include_invalid.plux "Error parsing of include_invalid.pluxinc failed at line 2 error: unexpected content, expected [doc] content: [global var=invalid]"]
+	[call match-file-error system/error_include_missing.plux "Error failed to include: include_missing.pluxinc"]
+	[call match-file-ok system/function.plux]
+	[call match-file-ok system/include.plux]
+	[call match-file-error system/timeout.plux "Timeout LineRegexMatch SH-PROMPT:"]
+	?SH-PROMPT:

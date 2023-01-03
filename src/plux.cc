@@ -29,6 +29,40 @@ namespace plux
         return std::string(buf);
     }
 
+    /**
+     * Get basename from path (not using reference, char* signature).
+     */
+    std::string path_basename(std::string path)
+    {
+        return basename(const_cast<char*>(path.c_str()));
+    }
+
+    /**
+     * Get dirname from path (not using reference, char* signature).
+     */
+    std::string path_dirname(std::string path)
+    {
+        return dirname(const_cast<char*>(path.c_str()));
+    }
+
+    /**
+     * Join two path elements.
+     */
+    std::string path_join(const std::string& p1, const std::string& p2)
+    {
+        if (p1.size() == 0) {
+            return p2;
+        } else if (p2.size() == 0) {
+            return p1;
+        } else if (p1[p1.size() - 1] == '/' && p2[0] == '/') {
+            return p1 + p2.substr(1);
+        } else if(p1[p1.size() - 1] == '/' || p2[0] == '/') {
+            return p1 + p2;
+        } else {
+            return p1 + "/" + p2;
+        }
+    }
+
     const unsigned int default_timeout_ms = 60000;
     const std::string empty_string;
 

@@ -13,6 +13,14 @@ set_target_properties(test_log PROPERTIES
 target_include_directories(test_log PUBLIC ${common_INCLUDE_DIRS})
 target_link_libraries(test_log libplux ${common_LIBRARIRES})
 
+add_executable(test_plux test_plux.cc)
+add_test(plux test_script_run)
+set_target_properties(test_plux PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED ON)
+target_include_directories(test_plux PUBLIC ${common_INCLUDE_DIRS})
+target_link_libraries(test_plux libplux ${common_LIBRARIRES})
+
 add_executable(test_script test_script.cc)
 add_test(script test_script)
 set_target_properties(test_script PROPERTIES

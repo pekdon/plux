@@ -163,6 +163,8 @@ namespace plux
 
         const std::string& shell_name(Line* line);
 
+        std::string current_script_path() const;
+
         void push_function(Function* fun, const std::string& shell);
         void pop_function(Function* fun, const std::string& shell);
 

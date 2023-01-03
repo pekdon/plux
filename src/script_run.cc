@@ -358,8 +358,9 @@ namespace plux
     {
         _log << "ScriptRun" << "run_include " << filename << LOG_LEVEL_TRACE;
 
+        std::string full_path = path_join(current_script_path(), filename);
         std::filebuf fb;
-        if (! fb.open(filename, std::ios::in)) {
+        if (! fb.open(full_path, std::ios::in)) {
             return script_error(RES_ERROR, line,
                                 "failed to include: " + filename);
         }
@@ -471,6 +472,11 @@ namespace plux
             return _fun_ctx.back().shell();
         }
         return line->shell();
+    }
+
+    std::string ScriptRun::current_script_path() const
+    {
+        return path_dirname(_scripts.back()->file());
     }
 
     void ScriptRun::push_function(Function* fun, const std::string& shell)
