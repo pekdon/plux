@@ -16,9 +16,9 @@ public:
         ASSERT_EQUAL("both empty", "", plux::path_join("", ""));
         ASSERT_EQUAL("p1 empty", "p2", plux::path_join("", "p2"));
         ASSERT_EQUAL("p2 empty", "p1", plux::path_join("p1", ""));
-        ASSERT_EQUAL("both slash", "/p1/p2", plux::path_join("/p1/", "/p2"));
+        ASSERT_EQUAL("both slash", "/p2", plux::path_join("/p1/", "/p2"));
         ASSERT_EQUAL("p1 slash", "/p1/p2", plux::path_join("/p1/", "p2"));
-        ASSERT_EQUAL("p2 slash", "/p1/p2", plux::path_join("/p1", "/p2"));
+        ASSERT_EQUAL("p2 slash", "/p2", plux::path_join("/p1", "/p2"));
         ASSERT_EQUAL("no slash", "/p1/p2", plux::path_join("/p1", "p2"));
     }
 };

@@ -56,9 +56,9 @@ namespace plux
             return p2;
         } else if (p2.size() == 0) {
             return p1;
-        } else if (p1[p1.size() - 1] == '/' && p2[0] == '/') {
-            return p1 + p2.substr(1);
-        } else if(p1[p1.size() - 1] == '/' || p2[0] == '/') {
+        } else if (p2[0] == '/') {
+            return p2;
+        } else if(p1[p1.size() - 1] == '/') {
             return p1 + p2;
         } else {
             return p1 + "/" + p2;

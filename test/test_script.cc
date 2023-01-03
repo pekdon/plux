@@ -69,7 +69,8 @@ public:
 
     virtual ~TestLine() { }
 
-    virtual plux::LineRes run(plux::ShellCtx& ctx, plux::ShellEnv& env) {
+    virtual plux::LineRes run(plux::ShellCtx& ctx,
+                              plux::ShellEnv& env) override {
         return plux::LineRes(plux::RES_ERROR);
     }
 

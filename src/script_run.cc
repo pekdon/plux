@@ -301,8 +301,6 @@ namespace plux
                      << " from " << filename << LOG_LEVEL_TRACE;
                 auto res = run_include(line, filename);
                 if (res.status() != RES_OK) {
-                    _log << "ScriptRun" << "failed to include builtin"
-                         << filename << LOG_LEVEL_WARNING;
                     return res;
                 }
                 fun = _script_env.fun_get(lres.fun());
