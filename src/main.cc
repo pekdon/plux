@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "plux.hh"
 #include "script_parse.hh"
 #include "script_run.hh"
 
@@ -68,7 +69,7 @@ static int dump_script(plux::Script* script)
 }
 
 static int run_script(plux::Script* script, enum plux::log_level log_level,
-                      bool tail)
+                      bool tail, size_t n, size_t tot)
 {
     int exitcode = 1;
     plux::LogFile log(log_level, "plux.log");
@@ -77,10 +78,12 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
     plux::env_map env;
     fill_os_env(env);
     auto run = plux::ScriptRun(log, progress_log, env, script, tail);
-    std::cout << "Running " << script->file() << "..." << std::endl;
+    std::cout << plux::format_timestamp() << ": " << script->file()
+              << " (" << n << "/" << tot << ")" << std::endl;
     auto res = run.run();
+    std::cout << plux::format_timestamp() << ": " << script->file() << ": ";
     if (res.status() == plux::RES_OK) {
-        std::cout << "Success" << std::endl;
+        std::cout << "OK" << std::endl;
         exitcode = 0;
     } else {
         if (res.status() == plux::RES_TIMEOUT) {
@@ -100,15 +103,16 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
 }
 
 static int run_file(int opt_dump, enum plux::log_level opt_log_level,
-                    bool opt_tail, std::string file)
+                    bool opt_tail, std::string file, size_t n, size_t tot)
 {
+    int exitcode = 1;
+
     std::filebuf fb;
     if (! fb.open(file, std::ios::in)) {
         std::cerr << "failed to open: " << file << std::endl;
-        return 1;
+        return exitcode;
     }
 
-    int exitcode = 1;
     std::istream is(&fb);
     try {
         plux::ScriptEnv script_env;
@@ -118,7 +122,8 @@ static int run_file(int opt_dump, enum plux::log_level opt_log_level,
         if (opt_dump) {
             exitcode = dump_script(script.get());
         } else {
-            exitcode = run_script(script.get(), opt_log_level, opt_tail);
+            exitcode = run_script(script.get(), opt_log_level, opt_tail,
+                                  n, tot);
         }
     } catch (plux::ScriptParseError& ex) {
         std::cerr << "parsing of " << ex.path() << " failed at line "
@@ -128,6 +133,39 @@ static int run_file(int opt_dump, enum plux::log_level opt_log_level,
     }
 
     return exitcode;
+}
+
+static int run_files(int opt_dump, enum plux::log_level opt_log_level,
+                     bool opt_tail, std::vector<std::string>& files)
+{
+    int exitcode = 0;
+    std::vector<std::string>::iterator it(files.begin());
+    for (size_t n = 1; it != files.end(); n++, ++it) {
+        int file_exitcode = run_file(opt_dump, opt_log_level, opt_tail, *it,
+                                     n, files.size());
+        if (exitcode == 0 && file_exitcode) {
+            exitcode = file_exitcode;
+        }
+    }
+    return exitcode;
+}
+
+static void find_plux_files(int argc, char** argv,
+                            std::vector<std::string>& files)
+{
+
+    for (int i = 0; i < argc; i++) {
+        glob_t pglob = {0};
+        if (glob(argv[i], 0, nullptr, &pglob)) {
+            std::cerr << "glob " << argv[i] << " failed: " << strerror(errno)
+                      << std::endl;
+        } else {
+            for (size_t j = 0; j < pglob.gl_pathc; j++) {
+                files.push_back(pglob.gl_pathv[j]);
+            }
+            globfree(&pglob);
+        }
+    }
 }
 
 int main(int argc, char *argv[])
@@ -181,23 +219,8 @@ int main(int argc, char *argv[])
     sigaction(SIGTERM, &act, 0);
     sigaction(SIGINT, &act, 0);
 
-    int exitcode = 0;
-    for (int i = 0; i < argc; i++) {
-        glob_t pglob = {0};
-        if (glob(argv[i], 0, nullptr, &pglob)) {
-            std::cerr << "glob " << argv[i] << " failed: " << strerror(errno)
-                      << std::endl;
-        } else {
-            for (size_t j = 0; j < pglob.gl_pathc; j++) {
-                int file_exit_code = run_file(opt_dump, opt_log_level,
-                                              opt_tail, pglob.gl_pathv[j]);
-                if (! exitcode && file_exit_code) {
-                    exitcode = file_exit_code;
-                }
-            }
-            globfree(&pglob);
-        }
-    }
+    std::vector<std::string> files;
+    find_plux_files(argc, argv, files);
 
-    return exitcode;
+    return run_files(opt_dump, opt_log_level, opt_tail, files);
 }
