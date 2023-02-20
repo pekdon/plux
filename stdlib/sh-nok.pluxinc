@@ -1,0 +1,13 @@
+[doc]
+usage: [call sh-nok]
+
+Consumes SH-PROMPT: and verifies that the last executed command finished
+with a non-zero exit code.
+[enddoc]
+
+[function sh-nok]
+	?SH-PROMPT:
+	!echo $$?
+	?^[1-9][0-9]*$
+	?SH-PROMPT:
+[endfunction]
