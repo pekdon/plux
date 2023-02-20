@@ -2,6 +2,7 @@
 
 #include "regex.hh"
 #include "script_parse.hh"
+#include "script_header.hh"
 #include "str.hh"
 
 namespace plux
@@ -93,8 +94,10 @@ namespace plux
                     auto macro = parse_macro(ctx);
                     delete macro;
                 } else {
-                    line_cmd = parse_header_cmd(ctx);
-                    script->header_add(line_cmd);
+                    line_cmd = parse_header_cmd(ctx, script.get());
+                    if (line_cmd) {
+                        script->header_add(line_cmd);
+                    }
                 }
                 break;
             case PARSE_STATE_SHELL:
@@ -104,12 +107,16 @@ namespace plux
                    ctx.shell = "cleanup";
                 } else {
                     line_cmd = parse_line_cmd(ctx);
-                    script->line_add(line_cmd);
+                    if (line_cmd) {
+                        script->line_add(line_cmd);
+                    }
                 }
                 break;
             case PARSE_STATE_CLEANUP:
                 line_cmd = parse_line_cmd(ctx);
-                script->cleanup_add(line_cmd);
+                if (line_cmd) {
+                    script->cleanup_add(line_cmd);
+                }
                 break;
             }
         }
@@ -147,12 +154,13 @@ namespace plux
     /**
      * Parse commands valid in script header.
      */
-    Line* ScriptParse::parse_header_cmd(const ScriptParseCtx& ctx)
+    Line* ScriptParse::parse_header_cmd(const ScriptParseCtx& ctx,
+                                        Script* script)
     {
         if (ctx.starts_with("[include ")) {
             return parse_include(ctx);;
         } else if (ctx.starts_with("[config ")) {
-            return parse_config(ctx);
+            return parse_config(ctx, script);
         } else if (ctx.starts_with("[global ")) {
             return parse_global(ctx);
         }
@@ -306,24 +314,32 @@ namespace plux
         return new HeaderInclude(_path, _linenumber, file);
     }
 
-    Line* ScriptParse::parse_config(const ScriptParseCtx& ctx)
+    Line* ScriptParse::parse_config(const ScriptParseCtx& ctx, Script* script)
     {
-        if (ctx.starts_with("[config require=")) {
-            std::string key, val;
-            auto val_start = ctx.line.find('=', ctx.start + 16);
-            if (val_start == std::string::npos) {
-                key = ctx.substr(16, 1);
-                val = "";
-            } else {
-                // value set, require specific value
-                key = ctx.substr(16, ctx.line.size() - val_start);
-                val = ctx.substr(val_start - ctx.start + 1, 1);
-            }
-            return new HeaderConfigRequire(_path, _linenumber, key, val);
+        if (ctx.starts_with("[config require ")) {
+            return parse_config_key_val<HeaderConfigRequire>(ctx, 16);
+        } else if (ctx.starts_with("[config set ")) {
+            return parse_config_key_val<HeaderConfigSet>(ctx, 12);
         }
-
         parse_error(ctx.line, "unexpected content, config");
         return nullptr;
+    }
+
+    template<typename T>
+    Line* ScriptParse::parse_config_key_val(const ScriptParseCtx& ctx,
+                                            size_t start)
+    {
+        std::string key, val;
+        auto val_start = ctx.line.find('=', ctx.start + start);
+        if (val_start == std::string::npos) {
+            key = ctx.substr(start, 1);
+            val = "";
+        } else {
+            // value set, require specific value
+            key = ctx.substr(start, ctx.line.size() - val_start);
+            val = ctx.substr(val_start - ctx.start + 1, 1);
+        }
+        return new T(_path, _linenumber, key, val);
     }
 
     Line* ScriptParse::parse_global(const ScriptParseCtx& ctx)

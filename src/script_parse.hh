@@ -100,11 +100,13 @@ namespace plux
 
         bool parse_shell(const ScriptParseCtx& ctx, std::string& shell_ret);
 
-        Line* parse_header_cmd(const ScriptParseCtx& ctx);
+        Line* parse_header_cmd(const ScriptParseCtx& ctx, Script* script);
         Line* parse_line_cmd(const ScriptParseCtx& ctx);
 
         Line* parse_include(const ScriptParseCtx& ctx);
-        Line* parse_config(const ScriptParseCtx& ctx);
+        Line* parse_config(const ScriptParseCtx& ctx, Script* script);
+        template<typename T>
+        Line* parse_config_key_val(const ScriptParseCtx& ctx, size_t start);
         Line* parse_global(const ScriptParseCtx& ctx);
         Line* parse_local(const ScriptParseCtx& ctx);
         Line* parse_var_assign(const ScriptParseCtx& ctx, enum var_scope scope);

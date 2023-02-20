@@ -1,0 +1,8 @@
+[doc]
+Test invalid shell_hook_init configuration where the function is not defined.
+[enddoc]
+
+[config set shell_hook_init=missing-init]
+
+[shell test]
+	?SH-PROMPT:

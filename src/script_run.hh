@@ -146,19 +146,20 @@ namespace plux
         void stop(void);
 
     protected:
-        ScriptResult run_headers(line_it it, line_it end);
         ScriptResult run_lines(line_it it, line_it end);
         ScriptResult run_line(Line* line);
-        ScriptResult run_function(const LineRes& lres, const Line* line,
+        ScriptResult run_function(const FunctionArgs& fargs, const Line* line,
                                   const std::string& shell);
-        ScriptResult run_function(Function* fun, const std::string& shell,
-                                  LineRes::arg_it arg_begin,
-                                  LineRes::arg_it arg_end);
+        ScriptResult run_function(const FunctionArgs& fargs,
+                                  const std::string& shell,
+                                  Function* fun);
         ScriptResult run_include(const Line* line,
                                  const std::string& filename);
+        ScriptResult run_set(const Line* line, const FunctionArgs& fargs);
+
         enum line_status wait_for_input(int timeout_ms);
 
-        ShellCtx* get_or_init_shell(const std::string& name);
+        ShellCtx* get_or_init_shell(Line* line, const std::string& name);
         Shell* init_shell(const std::string& name);
         ShellLog* init_shell_log(const std::string& name);
 
@@ -200,8 +201,11 @@ namespace plux
         ScriptEnv& _script_env;
         /** Script */
         std::vector<const Script*> _scripts;
-        /** */
+        /** Script Function Context */
         std::vector<ScriptFunctionCtx> _fun_ctx;
+
+        /** Configured shell hook */
+        std::string _shell_hook_init;
     };
 
 }

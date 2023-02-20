@@ -3,6 +3,7 @@
 
 #include "test.hh"
 #include "script_parse.hh"
+#include "script_header.hh"
 
 class TestScriptParseCtx : public plux::ScriptParseCtx,
                            public TestSuite {
@@ -90,8 +91,9 @@ public:
         register_test("next_line",
                       std::bind(&TestScriptParse::test_next_line, this));
 
-        register_test("parse", std::bind(&TestScriptParse::test_parse, this));
-
+        register_test("parse_script_hook_init",
+                      std::bind(&TestScriptParse::test_parse_script_hook_init,
+                                this));
         register_test("parse_function",
                       std::bind(&TestScriptParse::test_parse_function, this));
 
@@ -152,15 +154,16 @@ public:
         ASSERT_EQUAL("skip blank", false, next_line(parse_ctx));
     }
 
-    void test_parse()
+    void test_parse_script_hook_init()
     {
-        // FIXME: script does not start with [doc]
-        // FIXME: not [enddoc] as first [ after [doc]
-        // FIXME: unexpected content in headers
-        // FIXME: unexpected content in shell
-        // FIXME: unexpected content in cleanup
-
-        // FIXME: verify shell is cleanup after [cleanup]
+        plux::ScriptEnv env;
+        plux::Script script(":memory:", env);
+        auto line =
+            parse_config(ctx("[config set shell_hook_init=init_fun]"),
+                         &script);
+        ASSERT_NOT_NULL("line", line);
+        auto set_line = dynamic_cast<plux::HeaderConfigSet*>(line);
+        ASSERT_NOT_NULL("set line", set_line);
     }
 
     void test_parse_function()
@@ -193,14 +196,14 @@ public:
 
     void test_parse_config()
     {
-        auto line = parse_config(ctx("[config require=V1]"));
+        auto line = parse_config(ctx("[config require V1]"), nullptr);
         auto hdr = dynamic_cast<plux::HeaderConfigRequire*>(line);
         ASSERT_EQUAL("var only", true, hdr != nullptr);
         ASSERT_EQUAL("var only", "V1", hdr->key());
         ASSERT_EQUAL("var only", "", hdr->val());
         delete line;
 
-        line = parse_config(ctx("[config require=V1=V2]"));
+        line = parse_config(ctx("[config require V1=V2]"), nullptr);
         hdr = dynamic_cast<plux::HeaderConfigRequire*>(line);
         ASSERT_EQUAL("var only", true, hdr != nullptr);
         ASSERT_EQUAL("var only", "V1", hdr->key());

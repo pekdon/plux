@@ -20,6 +20,7 @@ set(libplux_SOURCES
   regex.cc
   script.cc
   script_env.cc
+  script_header.cc
   script_parse.cc
   script_run.cc
   shell.cc

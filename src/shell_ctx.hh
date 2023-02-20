@@ -128,4 +128,29 @@ namespace plux
         virtual const std::string& name(void) const = 0;
         virtual const std::string& shell(void) const = 0;
     };
+
+    /**
+     * Function reference including arguments.
+     */
+    class FunctionArgs {
+    public:
+        typedef std::vector<std::string>::const_iterator arg_it;
+
+        FunctionArgs() { }
+        explicit FunctionArgs(const std::string& fun)
+            : _fun(fun) { }
+        FunctionArgs(const std::string& fun,
+                     const std::vector<std::string>& args)
+            : _fun(fun),
+              _args(args) { }
+        ~FunctionArgs() { }
+
+        const std::string& fun(void) const { return _fun; }
+        arg_it arg_begin(void) const { return _args.begin(); }
+        arg_it arg_end(void) const { return _args.end(); }
+
+    private:
+        std::string _fun;
+        std::vector<std::string> _args;
+    };
 }

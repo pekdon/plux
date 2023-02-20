@@ -16,7 +16,8 @@ namespace plux
         RES_NO_MATCH,
         RES_CALL,
         RES_TIMEOUT,
-        RES_INCLUDE
+        RES_INCLUDE,
+        RES_SET
     };
 
     /**
@@ -24,28 +25,24 @@ namespace plux
      */
     class LineRes {
     public:
-        typedef std::vector<std::string>::const_iterator arg_it;
-
         explicit LineRes(enum line_status status)
             : _status(status)
         {
         }
         LineRes(enum line_status status, const std::string& file)
             : _status(status),
-              _fun(file)
+              _fargs(file)
         {
         }
         LineRes(enum line_status status,
                 const std::string& fun, const std::vector<std::string>& args)
             : _status(status),
-              _fun(fun),
-              _args(args)
+              _fargs(fun, args)
         {
         }
         ~LineRes(void) { }
 
         enum line_status status(void) const { return _status; }
-        const std::string& fun(void) const { return _fun; }
 
         bool operator==(enum line_status status) const {
             return _status == status;
@@ -54,13 +51,11 @@ namespace plux
             return _status != status;
         }
 
-        arg_it arg_begin(void) const { return _args.begin(); }
-        arg_it arg_end(void) const { return _args.end(); }
+        const FunctionArgs& fargs() const { return _fargs; }
 
     private:
         enum line_status _status;
-        std::string _fun;
-        std::vector<std::string> _args;
+        FunctionArgs _fargs;
     };
 
     /**

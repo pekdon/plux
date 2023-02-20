@@ -2,7 +2,7 @@
 Basic PLUX script, smoke test
 [enddoc]
 
-[config require=HOME]
+[config require HOME]
 
 [shell test]
     # test match on standard output

@@ -40,6 +40,11 @@ static void fill_os_env(plux::env_map& env)
 static int usage(const char* name)
 {
     std::cerr << "usage: " << name << " script" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "    -d --dump" << std::endl;
+    std::cerr << "    -h --help" << std::endl;
+    std::cerr << "    -l --log-level" << std::endl;
+    std::cerr << "    -t --tail" << std::endl;
     return 1;
 }
 

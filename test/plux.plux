@@ -19,6 +19,12 @@ to verify that the provided scripts run as expected.
 	??$file: $error
 [endfunction]
 
+[function match-file-parse-error file error]
+	??$file
+	[log $file (expect parse error)]
+	??error:
+[endfunction]
+
 [shell plux]
 	?SH-PROMPT:
 	[log override PLUX_STDLIB_PATH]
@@ -32,5 +38,8 @@ to verify that the provided scripts run as expected.
 	[call match-file-error system/error_include_missing.plux "Error failed to include: include_missing.pluxinc"]
 	[call match-file-ok system/function.plux]
 	[call match-file-ok system/include.plux]
+	[call match-file-parse-error system/invalid.plux "invalid shell name: invalid/name. only A-Z, a-z, 0-9, - and _ allowed"]
+	[call match-file-ok system/shell_hook_init.plux]
+	[call match-file-error system/shell_hook_init_missing.plux "Error function missing-init in shell test"]
 	[call match-file-error system/timeout.plux "Timeout LineRegexMatch SH-PROMPT:"]
 	?SH-PROMPT:

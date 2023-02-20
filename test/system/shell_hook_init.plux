@@ -1,0 +1,19 @@
+[doc]
+Test shell_hook_init configuration.
+[enddoc]
+
+[config set shell_hook_init=my-init]
+
+[function my-init]
+	?SH-PROMPT:
+	!echo "my-init is called"
+	?SH-PROMPT:
+	!export my_init_value="match"
+[endfunction]
+
+[shell test]
+	# verify my-init is called by looking at the value of $my_init_value
+	# which would be empty if init was not run.
+	!echo $$my_init_value
+	?match
+	?SH-PROMPT:

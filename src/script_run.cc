@@ -185,7 +185,7 @@ namespace plux
 
     ScriptResult ScriptRun::run(const Script* script)
     {
-        auto res = run_headers(script->header_begin(), script->header_end());
+        auto res = run_lines(script->header_begin(), script->header_end());
         if (res.status() == RES_OK) {
             res = run_lines(script->line_begin(), script->line_end());
             run_lines(script->cleanup_begin(), script->cleanup_end());
@@ -204,26 +204,6 @@ namespace plux
             }
             _stop = true;
         }
-    }
-
-    /**
-     * Run script headers, include statements, config requirements
-     * etc.
-     */
-    ScriptResult ScriptRun::run_headers(line_it it, line_it end)
-    {
-        for (; it != end; ++it) {
-            try {
-                auto res = run_line(*it);
-                if (res.status() != RES_OK) {
-                    return res;
-                }
-            } catch (const PluxException& ex) {
-                std::string info = ex.info();
-                return script_error(LineRes(RES_ERROR), *it, info);
-            }
-        }
-        return ScriptResult();
     }
 
     /**
@@ -259,7 +239,7 @@ namespace plux
         _log << "ScriptRun" << "run_line " << line_shell_name << " "
              << line->to_string() << LOG_LEVEL_DEBUG;
 
-        auto shell = get_or_init_shell(line_shell_name);
+        auto shell = get_or_init_shell(line, line_shell_name);
         _timeout.set_timeout_ms(shell->timeout());
         _timeout.restart();
 
@@ -278,9 +258,11 @@ namespace plux
         }
 
         if (lres == RES_CALL) {
-            return run_function(lres, line, line_shell_name);
+            return run_function(lres.fargs(), line, line_shell_name);
         } else if (lres == RES_INCLUDE) {
-            return run_include(line, lres.fun());
+            return run_include(line, lres.fargs().fun());
+        } else if (lres == RES_SET) {
+            return run_set(line, lres.fargs());
         } else if (lres != RES_OK) {
             return script_error(lres, line, plux::empty_string);
         } else {
@@ -288,44 +270,42 @@ namespace plux
         }
     }
 
-    ScriptResult ScriptRun::run_function(const LineRes& lres, const Line* line,
+    ScriptResult ScriptRun::run_function(const FunctionArgs& fargs,
+                                         const Line* line,
                                          const std::string& shell)
     {
-        auto fun = _script_env.fun_get(lres.fun());
+        auto fun = _script_env.fun_get(fargs.fun());
         if (fun == nullptr) {
             // function not loaded, look for a builting function
-            auto it = builtin_funs.find(lres.fun());
+            auto it = builtin_funs.find(fargs.fun());
             if (it != builtin_funs.end()) {
                 std::string filename = _cfg.stdlib_dir() + "/" + it->second;
-                _log << "ScriptRun" << "include builtin " << lres.fun()
+                _log << "ScriptRun" << "include builtin " << fargs.fun()
                      << " from " << filename << LOG_LEVEL_TRACE;
                 auto res = run_include(line, filename);
                 if (res.status() != RES_OK) {
                     return res;
                 }
-                fun = _script_env.fun_get(lres.fun());
+                fun = _script_env.fun_get(fargs.fun());
             }
         }
 
         if (fun == nullptr) {
-            throw UndefinedException(shell, "function", lres.fun());
+            throw UndefinedException(shell, "function", fargs.fun());
         }
 
 
-        return run_function(fun, shell,
-                            lres.arg_begin(), lres.arg_end());
-
+        return run_function(fargs, shell, fun);
     }
 
-    ScriptResult ScriptRun::run_function(Function* fun,
+    ScriptResult ScriptRun::run_function(const FunctionArgs& fargs,
                                          const std::string& shell,
-                                         LineRes::arg_it arg_begin,
-                                         LineRes::arg_it arg_end)
+                                         Function* fun)
     {
         _log << "ScriptRun" << "run_function " << fun->name() << " ("
              << fun->num_args() << ")" << LOG_LEVEL_TRACE;
 
-        auto num_args = arg_end - arg_begin;
+        auto num_args = fargs.arg_end() - fargs.arg_begin();
         if (fun->num_args() != num_args) {
             throw UndefinedException(shell, "argument", fun->name());
         }
@@ -335,7 +315,7 @@ namespace plux
         // function arguments provided as global function scoped
         // variables.
         auto arg_name_it = fun->args_begin();
-        auto arg_val_it = arg_begin;
+        auto arg_val_it = fargs.arg_begin();
         for (; arg_name_it != fun->args_end(); ++arg_name_it, ++arg_val_it) {
             _env.set_env("", *arg_name_it, VAR_SCOPE_FUNCTION, *arg_val_it);
         }
@@ -381,6 +361,28 @@ namespace plux
         }
         return res;
 
+    }
+
+    ScriptResult ScriptRun::run_set(const Line* line,
+                                    const FunctionArgs& fargs)
+    {
+        size_t arg_num = fargs.arg_end() - fargs.arg_begin();
+        if (arg_num != 2) {
+            return script_error(LineRes(RES_ERROR), line, "error");
+        }
+
+        auto key_it = fargs.arg_begin();
+        auto val_it = fargs.arg_begin() + 1;
+
+        ScriptResult res;
+        if (*key_it == "shell_hook_init") {
+            if (_shell_hook_init.empty()) {
+                _shell_hook_init = *val_it;
+            } else {
+            }
+        } else {
+        }
+        return res;
     }
 
     /**
@@ -432,7 +434,7 @@ namespace plux
         return RES_OK;
     }
 
-    ShellCtx* ScriptRun::get_or_init_shell(const std::string& name)
+    ShellCtx* ScriptRun::get_or_init_shell(Line* line, const std::string& name)
     {
         auto it = _shells.find(name);
         if (it != _shells.end()) {
@@ -443,6 +445,11 @@ namespace plux
         auto shell = init_shell(name);
         _shells[name] = shell;
         _log.trace("ScriptRun", "started new shell " + name);
+
+        if (! _shell_hook_init.empty()) {
+            FunctionArgs fargs(_shell_hook_init);
+            run_function(fargs, line, name);
+        }
 
         return shell;
     }

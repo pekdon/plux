@@ -2,6 +2,7 @@
 
 #include "test.hh"
 #include "script.hh"
+#include "script_header.hh"
 #include "script_run.hh"
 #include "shell_log.hh"
 

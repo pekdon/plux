@@ -33,6 +33,13 @@ private:
         throw AssertFailed(__FILE__, __LINE__, oss.str());              \
     }
 
+#define ASSERT_NOT_NULL(msg, actual)                                    \
+    if ((actual) == nullptr) {                                          \
+        std::ostringstream oss;                                         \
+        oss << (msg) << " expected to be non null";                     \
+        throw AssertFailed(__FILE__, __LINE__, oss.str());              \
+    }
+
 class TestSuite {
 public:
     typedef std::function<void()> test_fn;
