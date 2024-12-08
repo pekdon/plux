@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
+
+project(plux)
 
 # Check for C++11
 enable_language(CXX)
@@ -11,8 +13,6 @@ include(CheckSymbolExists)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceRuns)
 include(GNUInstallDirs)
-
-project(plux)
 
 check_include_file(pty.h HAVE_PTY_H)
 check_include_file(util.h HAVE_UTIL_H)
