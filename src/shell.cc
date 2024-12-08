@@ -118,7 +118,8 @@ namespace plux
      */
     void Shell::progress_log(const std::string& msg)
     {
-        std::cout << format_timestamp() << ": " << msg << std::endl;
+        std::cout << format_timestamp() << ": [" << _name << "] " << msg
+                  << std::endl;
         _progress_log.log(_name, msg);
     }
 

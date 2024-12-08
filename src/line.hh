@@ -78,12 +78,17 @@ namespace plux
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) = 0;
         virtual std::string to_string(void) const = 0;
+        virtual std::string to_string(ShellEnv& env,
+                                      const std::string& shell) const
+        {
+            return plux::empty_string;
+        }
 
     protected:
         std::string expand_var(const ShellEnv& env, const std::string& shell,
-                               const std::string& str);
+                               const std::string& str) const;
         void append_var_val(const ShellEnv& env, const std::string& shell,
-                            std::string& exp_str, const std::string& var);
+                            std::string& exp_str, const std::string& var) const;
 
     private:
         /** file line was parsed in. */

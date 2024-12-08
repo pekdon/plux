@@ -6,7 +6,7 @@
 namespace plux
 {
     std::string Line::expand_var(const ShellEnv& env, const std::string& shell,
-                                 const std::string& line)
+                                 const std::string& line) const
     {
         std::string exp_line;
 
@@ -71,7 +71,8 @@ namespace plux
     }
 
     void Line::append_var_val(const ShellEnv& env, const std::string& shell,
-                              std::string& exp_str, const std::string& var)
+                              std::string& exp_str,
+                              const std::string& var) const
     {
         std::string var_val;
         if (var.empty()) {

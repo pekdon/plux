@@ -313,6 +313,8 @@ namespace plux
         virtual ~LineRegexMatch(void) { }
 
         virtual std::string to_string(void) const override;
+        virtual std::string to_string(ShellEnv& env,
+                                      const std::string &shell) const override;
 
     protected:
         virtual bool match(ShellEnv& env, const std::string& shell,

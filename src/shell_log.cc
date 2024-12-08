@@ -27,7 +27,7 @@ namespace plux
     }
 
     /**
-     *g Write to input log.
+     * Write to input log.
      */
     void FileShellLog::input(const std::string& data)
     {
@@ -62,5 +62,7 @@ namespace plux
 
     void FileProgressLog::log(const std::string& shell, const std::string& msg)
     {
+        _log << "[" << shell << "] " << msg << std::endl;
+        _log.flush();
     }
 }

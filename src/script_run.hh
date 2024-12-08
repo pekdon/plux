@@ -171,7 +171,7 @@ namespace plux
         void pop_function(Function* fun, const std::string& shell);
 
         ScriptResult script_error(const LineRes& res, const Line* line,
-                                  std::string info);
+                                  std::string info, ShellCtx *ctx = nullptr);
 
     private:
         ScriptResult run(const Script* script);

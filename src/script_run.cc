@@ -264,7 +264,8 @@ namespace plux
         } else if (lres == RES_SET) {
             return run_set(line, lres.fargs());
         } else if (lres != RES_OK) {
-            return script_error(lres, line, plux::empty_string);
+            return script_error(lres, line, plux::empty_string,
+                                shell);
         } else {
             return ScriptResult();
         }
@@ -507,8 +508,11 @@ namespace plux
      * including function call stack.
      */
     ScriptResult ScriptRun::script_error(const LineRes& res, const Line* line,
-                                         std::string info)
+                                         std::string info, ShellCtx* ctx)
     {
+        if (info.empty() && ctx) {
+            info = line->to_string(_env, ctx->name());
+        }
         if (info.empty()) {
             info = line->to_string();
         }

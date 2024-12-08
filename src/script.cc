@@ -174,6 +174,13 @@ namespace plux
         return std::string("LineRegexMatch ") + pattern();
     }
 
+    std::string LineRegexMatch::to_string(ShellEnv& env,
+                                          const std::string& shell) const
+    {
+        std::string exp_pattern = expand_var(env, shell, pattern());
+        return std::string("?") + exp_pattern;
+    }
+
     bool LineRegexMatch::match(ShellEnv& env, const std::string& shell,
                                const std::string& line, bool is_line)
     {
