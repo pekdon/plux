@@ -10,6 +10,7 @@ extern "C" {
 #include <getopt.h>
 #include <glob.h>
 #include <signal.h>
+#include <time.h>
 }
 
 extern char **environ;
@@ -76,6 +77,9 @@ static int dump_script(plux::Script* script)
 static int run_script(plux::Script* script, enum plux::log_level log_level,
                       bool tail, size_t n, size_t tot)
 {
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     int exitcode = 1;
     plux::LogFile log(log_level, "plux.log");
     plux::FileProgressLog progress_log("plux.progress.log");
@@ -86,7 +90,13 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
     std::cout << plux::format_timestamp() << ": " << script->file()
               << " (" << n << "/" << tot << ")" << std::endl;
     auto res = run.run();
-    std::cout << plux::format_timestamp() << ": " << script->file() << ": ";
+
+    struct timespec end;
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    std::string elapsed_str = plux::format_elapsed(start, end);
+
+    std::cout << plux::format_timestamp() << ": " << script->file()
+              << " (" << elapsed_str << "): ";
     if (res.status() == plux::RES_OK) {
         std::cout << "OK" << std::endl;
         exitcode = 0;

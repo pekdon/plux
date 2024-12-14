@@ -1,9 +1,14 @@
 #include "plux.hh"
 
+#include <sstream>
+
 extern "C" {
 #include <libgen.h>
 #include <time.h>
 }
+
+static const uint64_t NSEC_PER_MSEC = 1000000;
+static const uint64_t NSEC_PER_SEC = 1000000000;
 
 namespace plux
 {
@@ -27,6 +32,40 @@ namespace plux
         char buf[20];
         strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm);
         return std::string(buf);
+    }
+
+    /**
+     * Format difference between start and end as elapsed time in
+     * human readable time.
+     */
+    std::string format_elapsed(const struct timespec &start,
+                               const struct timespec &end)
+    {
+        std::stringstream buf;
+        time_t sec = end.tv_sec - start.tv_sec;
+        uint64_t nsec;
+        if (start.tv_nsec > end.tv_nsec) {
+            sec -= 1;
+            nsec = end.tv_nsec + (NSEC_PER_SEC - start.tv_nsec);
+        } else {
+            nsec = end.tv_nsec - start.tv_nsec;
+        }
+        uint64_t msec = nsec / NSEC_PER_MSEC;
+
+        if (sec > 3600) {
+            buf << (sec / 3600) << "h";
+            sec = sec % 3600;
+        }
+        if (sec > 60) {
+            buf << (sec / 60) << "m";
+            sec = sec % 60;
+        }
+
+        buf << sec << "s";
+        if (msec > 0) {
+            buf << msec << "ms";
+        }
+        return buf.str();
     }
 
     /**

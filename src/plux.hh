@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <exception>
 #include <map>
 #include <string>
@@ -42,6 +43,8 @@ namespace plux
     };
 
     std::string format_timestamp(void);
+    std::string format_elapsed(const struct timespec &start,
+                               const struct timespec &end);
 
     std::string path_basename(const std::string& path);
     std::string path_dirname(const std::string& path);
