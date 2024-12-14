@@ -46,7 +46,7 @@ namespace plux
     {
         std::string context = file() + ":" + std::to_string(line());
         std::string log_msg = expand_var(env, ctx.name(), msg());
-        ctx.progress_log(context, log_msg);
+        ctx.progress_log(context, log_msg + plux::COLOR_RESET);
         return LineRes(RES_OK);
     }
 

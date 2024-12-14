@@ -109,6 +109,16 @@ namespace plux
 
     const std::map<std::string, std::string> default_env = {
         {"_TAB_", "\t"},
-        {"_CTRL_C_", "\003"}
+        {"_CTRL_C_", "\003"},
+        {"_COLOR_BOLD_", COLOR_BOLD},
+        {"_COLOR_BLACK_", COLOR_BLACK},
+        {"_COLOR_RED_", COLOR_RED},
+        {"_COLOR_GREEN_", COLOR_GREEN},
+        {"_COLOR_YELLOW_", COLOR_YELLOW},
+        {"_COLOR_BLUE_", COLOR_BLUE},
+        {"_COLOR_MAGENTA_", COLOR_MAGENTA},
+        {"_COLOR_CYAN_", COLOR_CYAN},
+        {"_COLOR_WHITE_", COLOR_WHITE},
+        {"_COLOR_RESET_", COLOR_RESET}
     };
 }

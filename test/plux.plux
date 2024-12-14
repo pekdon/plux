@@ -33,6 +33,7 @@ to verify that the provided scripts run as expected.
 
 	!$BIN_DIR/plux `ls system/*.plux | env LC_ALL=C sort`
 	[call match-file-ok system/basic.plux]
+	[call match-file-ok system/colors.plux]
 	[call match-file-error system/error.plux "Error sh1 error pattern sh1 matched"]
 	[call match-file-error system/error_include_invalid.plux "Error parsing of include_invalid.pluxinc failed at line 2 error: unexpected content, expected [doc] content: [global var=invalid]"]
 	[call match-file-error system/error_include_missing.plux "Error failed to include: include_missing.pluxinc"]

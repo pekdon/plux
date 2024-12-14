@@ -1,0 +1,9 @@
+[doc]
+Verify color variables beeing set.
+[enddoc]
+
+[shell log]
+    [log ${_COLOR_BOLD_}bold${_COLOR_BLACK_}black${_COLOR_RED_}red]
+    [log ${_COLOR_GREEN_}green${_COLOR_YELLOW_}yellow${_COLOR_BLUE_}blue]
+    [log ${_COLOR_MAGENTA_}magenta${_COLOR_CYAN_}cyan${_COLOR_WHITE_}white]
+    [log reset at end of log]
