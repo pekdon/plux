@@ -93,6 +93,9 @@ public:
                      expand_var(env, "shell", "hello ${with space}"));
         ASSERT_EQUAL("expand_var, ==", "==value==",
                      expand_var(env, "shell", "==$glob1=="));
+        ASSERT_EQUAL("expand_var, normal then curly",
+                     "hello worldplanet",
+                     expand_var(env, "shell", "hello $WHERE${with space}"));
 
         try {
             expand_var(env, "shell", "invalid $ is empty");
