@@ -47,6 +47,41 @@ _expand_var_begin(ExpandState& s, std::string::const_iterator& it,
     }
 }
 
+static std::string
+re_escape_val(const std::string val)
+{
+    auto it(val.begin());
+    bool in_escape;
+    std::string escaped;
+    for (; it != val.end(); ++it) {
+        if (in_escape) {
+            in_escape = false;
+            escaped += *it;
+        } else if (*it == '\\') {
+            in_escape = false;
+            escaped += *it;
+        } else {
+            switch (*it) {
+            case '(':
+            case ')':
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '?':
+            case '*':
+            case '|':
+            case '.':
+                escaped += '\\';
+                /* FALLTHROUGH */
+            default:
+                escaped += *it;
+            }
+        }
+    }
+    return escaped;
+}
+
 namespace plux
 {
     std::string Line::expand_var(const ShellEnv& env, const std::string& shell,
@@ -97,12 +132,30 @@ namespace plux
                               std::string& exp_str,
                               const std::string& var) const
     {
-        std::string var_val;
         if (var.empty()) {
             throw ScriptError(shell, "empty variable name");
-        } else if (! env.get_env(shell, var, var_val)) {
-            throw UndefinedException(shell, "variable", var);
         }
-        exp_str += var_val;
+
+        // special ${=VAR} that will cause the variable value to be
+        // regular expression safe.
+        bool re_escape;
+        std::string var_name;
+        if (var[0] == '=') {
+            var_name = var.substr(1);
+            re_escape = true;
+        } else {
+            var_name = var;
+            re_escape = false;
+        }
+        std::string var_val;
+        if (!env.get_env(shell, var_name, var_val)) {
+            throw UndefinedException(shell, "variable", var_name);
+        }
+
+        if (re_escape) {
+            exp_str += re_escape_val(var_val);
+        } else {
+            exp_str += var_val;
+        }
     }
 }

@@ -10,13 +10,13 @@ to verify that the provided scripts run as expected.
 [function match-file-ok file]
 	??$file
 	[log $file (expect ok)]
-	??$file: OK
+	?${=file} \(.*\): OK
 [endfunction]
 
 [function match-file-error file error]
 	??$file
 	[log $file (expect error)]
-	??$file: $error
+	?${=file} \(.*\): ${=error}
 [endfunction]
 
 [function match-file-parse-error file error]
@@ -42,5 +42,5 @@ to verify that the provided scripts run as expected.
 	[call match-file-parse-error system/invalid.plux "invalid shell name: invalid/name. only A-Z, a-z, 0-9, - and _ allowed"]
 	[call match-file-ok system/shell_hook_init.plux]
 	[call match-file-error system/shell_hook_init_missing.plux "Error function missing-init in shell test"]
-	[call match-file-error system/timeout.plux "Timeout LineRegexMatch SH-PROMPT:"]
+	[call match-file-error system/timeout.plux "Timeout ?SH-PROMPT:"]
 	?SH-PROMPT:

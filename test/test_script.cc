@@ -68,6 +68,8 @@ public:
     {
         register_test("expand_var",
                       std::bind(&TestLine::test_expand_var, this));
+        register_test("append_var_val",
+                      std::bind(&TestLine::test_append_var_val, this));
     }
 
     virtual ~TestLine() { }
@@ -127,6 +129,23 @@ public:
         ASSERT_EQUAL("expand_var, multi", "hello planet and world",
                      expand_var(env, "shell",
                                 "hello ${with space} and $WHERE"));
+    }
+
+    void test_append_var_val()
+    {
+        plux::env_map os_env;
+        plux::ShellEnvImpl env(os_env);
+        std::string val("with () and [] and . and * and ? and {} and |");
+        env.set_env("", "VAR", plux::VAR_SCOPE_GLOBAL, val);
+
+        std::string res;
+        append_var_val(env, "shell-name", res, "VAR");
+        ASSERT_EQUAL("verbatim value", val, res);
+        std::string res_escaped;
+        std::string val_escaped("with \\(\\) and \\[\\] and \\. and \\* and "
+                                "\\? and \\{\\} and \\|");
+        append_var_val(env, "shell-name", res_escaped, "=VAR");
+        ASSERT_EQUAL("escaped value", val_escaped, res_escaped);
     }
 
     virtual std::string to_string() const override { return "TestLine"; }
