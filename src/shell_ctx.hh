@@ -98,6 +98,8 @@ namespace plux
 
         virtual const std::string& name(void) const = 0;
         virtual void progress_log(const std::string& msg) = 0;
+        virtual void progress_log(const std::string& context,
+                                  const std::string& msg) = 0;
 
         /** Set error pattern for shell */
         virtual void set_error_pattern(const std::string& pattern) = 0;

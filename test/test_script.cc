@@ -21,6 +21,8 @@ public:
 
     virtual const std::string& name() const override { return _name; }
     virtual void progress_log(const std::string& msg) override { }
+    virtual void progress_log(const std::string& context,
+                              const std::string& msg) override { }
 
     unsigned int timeout() const override { return _timeout_ms; }
     virtual void set_timeout(unsigned int timeout_ms) override {

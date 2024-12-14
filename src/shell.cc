@@ -124,6 +124,16 @@ namespace plux
     }
 
     /**
+     * Progress log message with line context.
+     */
+    void Shell::progress_log(const std::string& context, const std::string& msg)
+    {
+        std::cout << format_timestamp() << " " << context << " [" << _name
+                  << "] " << msg << std::endl;
+        _progress_log.log(_name, msg);
+    }
+
+    /**
      * Send input to shell.
      *
      * @return true if all data was written, else false.

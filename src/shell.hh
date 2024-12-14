@@ -53,6 +53,8 @@ namespace plux
 
         virtual const std::string& name(void) const override { return _name; }
         virtual void progress_log(const std::string& msg) override;
+        virtual void progress_log(const std::string& context,
+                                  const std::string& msg) override;
 
         const std::string& error_pattern(void) const { return _error_pattern; }
         virtual void set_error_pattern(const std::string& pattern) override {
