@@ -1,6 +1,7 @@
 #include "plux.hh"
 
 #include <sstream>
+#include <cstdint>
 
 extern "C" {
 #include <libgen.h>
