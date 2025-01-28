@@ -235,7 +235,7 @@ namespace plux
             throw ScriptException("stopped");
         }
 
-        auto line_shell_name = this->shell_name(line);
+        auto line_shell_name = this->shell_name(_env, line);
         _log << "ScriptRun" << "run_line " << line_shell_name << " "
              << line->to_string() << LOG_LEVEL_DEBUG;
 
@@ -320,6 +320,7 @@ namespace plux
         for (; arg_name_it != fun->args_end(); ++arg_name_it, ++arg_val_it) {
             _env.set_env("", *arg_name_it, VAR_SCOPE_FUNCTION, *arg_val_it);
         }
+        _env.set_env("", "FUNCTION_SHELL", VAR_SCOPE_FUNCTION, shell);
 
         auto it = fun->line_begin();
         for (; it != fun->line_end(); ++it) {
@@ -473,7 +474,7 @@ namespace plux
         return _shell_logs.back();
     }
 
-    const std::string& ScriptRun::shell_name(Line* line)
+    std::string ScriptRun::shell_name(ShellEnv& env, Line* line)
     {
         if (line->shell().empty()) {
             if (_fun_ctx.empty()) {
@@ -483,7 +484,7 @@ namespace plux
             }
             return _fun_ctx.back().shell();
         }
-        return line->shell();
+        return line->shell(env, "");
     }
 
     std::string ScriptRun::current_script_path() const

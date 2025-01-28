@@ -163,7 +163,7 @@ namespace plux
         Shell* init_shell(const std::string& name);
         ShellLog* init_shell_log(const std::string& name);
 
-        const std::string& shell_name(Line* line);
+        std::string shell_name(ShellEnv& env, Line* line);
 
         std::string current_script_path() const;
 

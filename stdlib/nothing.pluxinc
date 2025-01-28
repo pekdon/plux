@@ -1,0 +1,8 @@
+[doc]
+usage: [call nothing]
+
+Do nothing, useful for implementing flow control.
+[enddoc]
+
+[function nothing]
+[endfunction]

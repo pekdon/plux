@@ -48,7 +48,7 @@ namespace plux
           _is(is),
           _env(env),
           _linenumber(0),
-          _shell_name_regex("^[A-Za-z0-9_-]+$")
+          _shell_name_regex("^\\$?[A-Za-z0-9_-]+$")
     {
     }
 

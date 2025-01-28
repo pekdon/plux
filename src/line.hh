@@ -74,7 +74,11 @@ namespace plux
 
         const std::string& file(void) const { return _file; }
         unsigned int line(void) const { return _line; }
-        const std::string& shell(void) const { return _shell; }
+        const std::string& shell() const { return _shell; }
+        std::string shell(ShellEnv& env, const std::string& shell) const
+        {
+            return expand_var(env, shell, _shell);
+        }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) = 0;
         virtual std::string to_string(void) const = 0;
@@ -92,7 +96,7 @@ namespace plux
 
     private:
         /** file line was parsed in. */
-        const std::string &_file;
+        const std::string _file;
         /** file line number. */
         unsigned int _line;
         /** shell line applies to, can be empty. */
