@@ -11,6 +11,7 @@ extern "C" {
 #include <glob.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 }
 
 extern char **environ;
@@ -23,6 +24,41 @@ static void signal_handler(int signal)
     case SIGTERM:
         break;
     }
+}
+
+enum color {
+    COLOR_GREEN,
+    COLOR_YELLOW,
+    COLOR_RED,
+    COLOR_BLUE
+};
+
+static std::string color(const std::string &str, enum color c)
+{
+    if (! isatty(STDOUT_FILENO)) {
+        return str;
+    }
+
+    std::string color_str("\033[");
+    switch (c) {
+    case COLOR_RED:
+        color_str += "31m";
+        break;
+    case COLOR_GREEN:
+        color_str += "32m";
+        break;
+    case COLOR_YELLOW:
+        color_str += "33m";
+        break;
+    case COLOR_BLUE:
+        color_str += "34m";
+        break;
+    default:
+        break;
+    }
+    color_str += str;
+    color_str += "\033[m";
+    return color_str;
 }
 
 static void fill_os_env(plux::env_map& env)
@@ -87,7 +123,8 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
     plux::env_map env;
     fill_os_env(env);
     auto run = plux::ScriptRun(log, progress_log, env, script, tail);
-    std::cout << plux::format_timestamp() << ": " << script->file()
+    std::cout << plux::format_timestamp() << ": "
+              << color(script->file(), COLOR_BLUE)
               << " (" << n << "/" << tot << ")" << std::endl;
     auto res = run.run();
 
@@ -98,13 +135,13 @@ static int run_script(plux::Script* script, enum plux::log_level log_level,
     std::cout << plux::format_timestamp() << ": " << script->file()
               << " (" << elapsed_str << "): ";
     if (res.status() == plux::RES_OK) {
-        std::cout << "OK" << std::endl;
+        std::cout << color("OK", COLOR_GREEN) << std::endl;
         exitcode = 0;
     } else {
         if (res.status() == plux::RES_TIMEOUT) {
-            std::cout << "Timeout ";
+            std::cout << color("Timeout ", COLOR_YELLOW);
         } else {
-            std::cout << "Error ";
+            std::cout << color("Error ", COLOR_RED);
         }
         std::cout << res.error() << std::endl
                   << res.file() << ":" << res.linenumber()
@@ -124,7 +161,7 @@ static int run_file(int opt_dump, enum plux::log_level opt_log_level,
 
     std::filebuf fb;
     if (! fb.open(file, std::ios::in)) {
-        std::cerr << "failed to open: " << file << std::endl;
+        std::cerr << color("failed to open: ", COLOR_RED) << file << std::endl;
         return exitcode;
     }
 
