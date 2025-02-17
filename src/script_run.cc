@@ -8,6 +8,7 @@ extern "C" {
 #include <unistd.h>
 }
 
+#include "os.hh"
 #include "stdlib_builtins.hh"
 #include "script_parse.hh"
 #include "script_run.hh"
@@ -468,7 +469,9 @@ namespace plux
         if (name.size() == 0) {
             _shell_logs.push_back(new NullShellLog());
         } else {
-            auto path = _cfg.log_dir() + "/" + script_name + "_" + name;
+            auto script_path = _cfg.log_dir() + "/" + script_name;
+            os_ensure_dir(script_path);
+            auto path = script_path + "/" + name;
             _shell_logs.push_back(new FileShellLog(path, name, _tail));
         }
         return _shell_logs.back();

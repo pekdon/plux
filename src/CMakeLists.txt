@@ -16,6 +16,7 @@ set(libplux_SOURCES
   forkpty.cc
   log.cc
   line.cc
+  os.cc
   plux.cc
   regex.cc
   script.cc
