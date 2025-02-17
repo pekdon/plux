@@ -191,13 +191,27 @@ static int run_files(int opt_dump, enum plux::log_level opt_log_level,
                      bool opt_tail, std::vector<std::string>& files)
 {
     int exitcode = 0;
+    std::vector<std::string> err_files;
     std::vector<std::string>::iterator it(files.begin());
     for (size_t n = 1; it != files.end(); n++, ++it) {
         int file_exitcode = run_file(opt_dump, opt_log_level, opt_tail, *it,
                                      n, files.size());
-        if (exitcode == 0 && file_exitcode) {
-            exitcode = file_exitcode;
+        if (file_exitcode) {
+            exitcode = exitcode ? exitcode : file_exitcode;
+            err_files.push_back(*it);
         }
+    }
+
+    if (err_files.empty()) {
+        std::cout << color("Success, all tests passed", COLOR_GREEN)
+                  << std::endl;
+    } else {
+        std::cout << color("Error:", COLOR_RED);
+        std::vector<std::string>::iterator eit(err_files.begin());
+        for (; eit != err_files.end(); ++eit) {
+            std::cout << " " << color(*eit, COLOR_YELLOW);
+        }
+        std::cout << std::endl;
     }
     return exitcode;
 }
