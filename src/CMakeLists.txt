@@ -7,8 +7,10 @@ set(common_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src
 file(GLOB pluxinc_files "${CMAKE_SOURCE_DIR}/stdlib/*.pluxinc")
 
 add_custom_command(OUTPUT stdlib_builtins.hh
-		   COMMAND "${CMAKE_SOURCE_DIR}/stdlib/gen_stdlib_builtins.sh"
-		   DEPENDS ${pluxinc_files})
+	COMMAND ${SH}
+	ARGS "${CMAKE_SOURCE_DIR}/stdlib/gen_stdlib_builtins.sh.in"
+	     "${CMAKE_SOURCE_DIR}/stdlib" stdlib_builtins.hh
+	DEPENDS ${pluxinc_files})
 add_custom_target(generate_stdlib_builtins DEPENDS stdlib_builtins.hh)
 
 set(libplux_SOURCES
