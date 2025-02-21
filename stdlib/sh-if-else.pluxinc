@@ -1,0 +1,21 @@
+[doc]
+usage: [call sh-if-else "$$i = 2" function-name-if function-name-else]
+
+Call function-name-if if the expression evaluates to true, the expression is
+run using test. If expression evaluates to false, function-name-else is called.
+[enddoc]
+
+[function sh-if-else expr nameif nameelse]
+[shell plux-sh-eval]
+	!if test $expr;	then
+	!	echo ==$nameif==
+	!else
+	!	echo ==$nameelse==
+	!fi
+	?^[\s>]*==(.+)==$
+	[global plux-function=$1]
+	?SH-PROMPT:
+
+[shell $FUNCTION_SHELL]
+	[call ${plux-function}]
+[endfunction]
