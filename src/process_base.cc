@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <cassert>
+#include <cctype>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
@@ -29,7 +30,8 @@ plux::ProcessBase::ProcessBase(Log& log,
                                ProgressLog& progress_log,
                                const std::string& name,
                                const std::string& command,
-                               ShellEnv& shell_env)
+                               ShellEnv& shell_env,
+                               bool trim_special)
     : _log(log),
       _shell_log(shell_log),
       _progress_log(progress_log),
@@ -39,6 +41,7 @@ plux::ProcessBase::ProcessBase(Log& log,
       _name(name),
       _timeout_ms(plux::default_timeout_ms),
       _command(command),
+      _trim_special(trim_special),
       _buf_matched(false),
       _pid(-1)
 {
@@ -121,7 +124,7 @@ void plux::ProcessBase::output(const char* data, ssize_t size)
             match_error(_buf, true);
 
             if (! _buf_matched) {
-                _lines.push_back(_buf);
+                _lines.push_back(line_trim_special(_buf));
             }
             _buf = "";
             _buf_matched = false;
@@ -130,6 +133,28 @@ void plux::ProcessBase::output(const char* data, ssize_t size)
         }
     }
     match_error(_buf, false);
+}
+
+std::string plux::ProcessBase::line_trim_special(const std::string& line)
+{
+    if (! _trim_special) {
+        return line;
+    }
+
+    std::string trimmed;
+    bool in_escape = false;
+    for (size_t i = 0; i < line.size(); i++) {
+        if (line[i] == 0x1b && line[i + 1] == '[') {
+            in_escape = true;
+        } else if (in_escape && line[i] == 'm') {
+            in_escape = false;
+        } else if (in_escape) {
+            // skip
+        } else {
+            trimmed += line[i];
+        }
+    }
+    return trimmed;
 }
 
 void plux::ProcessBase::line_consume_until(line_it it)

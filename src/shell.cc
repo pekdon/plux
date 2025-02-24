@@ -35,7 +35,8 @@ plux::Shell::Shell(Log& log,
                    const std::string& name,
                    const std::string& command,
                    ShellEnv& shell_env)
-    : ProcessBase(log, shell_log, progress_log, name, command, shell_env),
+    : ProcessBase(log, shell_log, progress_log, name, command, shell_env,
+                  true /* trim_special */),
       _fd(-1)
 {
     pid_t pid = forkpty(&_fd, nullptr, nullptr, nullptr);

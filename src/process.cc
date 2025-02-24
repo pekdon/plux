@@ -31,7 +31,8 @@ plux::Process::Process(Log& log,
                        const std::string& name,
                        const std::vector<std::string>& args,
                        ShellEnv& shell_env)
-    : ProcessBase(log, shell_log, progress_log, name, args[0], shell_env)
+    : ProcessBase(log, shell_log, progress_log, name, args[0], shell_env,
+                  false /* trim_special */)
 {
     _init_pipe(_stdin_pipe);
     _init_pipe(_stdout_pipe);

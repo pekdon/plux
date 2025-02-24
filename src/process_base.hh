@@ -43,7 +43,8 @@ namespace plux
                     ProgressLog& progress_log,
                     const std::string& name,
                     const std::string& command,
-                    ShellEnv& shell_env);
+                    ShellEnv& shell_env,
+                    bool trim_special);
         ProcessBase(const ProcessBase& process) = delete;
         virtual ~ProcessBase() = default;
 
@@ -100,6 +101,7 @@ namespace plux
         }
 
         bool stop_pid(bool wait);
+        std::string line_trim_special(const std::string& line);
         void log_and_throw_strerror(const std::string& msg);
 
         /** Application log. */
@@ -124,6 +126,10 @@ namespace plux
         unsigned int _timeout_ms;
         /** Command run to initialize the shell. */
         std::string _command;
+        /** If true, color escape codes are trimmed from the output making
+         *  it easier to write match patterns on pure text.
+         */
+        bool _trim_special;
         /** Error pattern */
         std::string _error_pattern;
         /** Error pattern, if any line matches signal error. */
