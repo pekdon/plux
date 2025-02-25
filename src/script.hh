@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <istream>
+#include <map>
 #include <memory>
 #include <string>
 #include <sstream>
@@ -327,13 +328,18 @@ namespace plux
     class Script {
     public:
         Script(const std::string& file, ScriptEnv& env);
-        ~Script(void);
+        ~Script();
 
         const std::string& file(void) const { return _file; }
         ScriptEnv& env(void) const { return _env; }
         const std::string& name(void) const { return _name; }
         const std::string& doc(void) const { return _doc; }
         void set_doc(const std::string& doc) { _doc = doc; }
+
+        bool process_add(const std::string& name,
+                         const std::vector<std::string>& args);
+        bool process_get(const ShellEnv& env, const std::string& name,
+                         std::vector<std::string>& args) const;
 
         line_it header_begin(void) const { return _headers.begin(); }
         line_it header_end(void) const { return _headers.end(); }
@@ -363,5 +369,7 @@ namespace plux
         line_vector _lines;
         /** lines for the cleanup section. */
         line_vector _cleanup_lines;
+        /** process (shell) name to command arguments. */
+        std::map<std::string, std::vector<std::string>> _process_args;
     };
 }

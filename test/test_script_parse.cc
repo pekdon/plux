@@ -101,6 +101,8 @@ public:
                       std::bind(&TestScriptParse::test_parse_config, this));
         register_test("parse_shell",
                       std::bind(&TestScriptParse::test_parse_shell, this));
+        register_test("parse_process",
+                      std::bind(&TestScriptParse::test_parse_process, this));
         register_test("parse_call",
                       std::bind(&TestScriptParse::test_parse_line_call, this));
         register_test("parse_line_cmd_output",
@@ -250,6 +252,25 @@ public:
 
         ASSERT_EQUAL("not shell", false,
                      parse_shell(ctx("[cleanup]"), name));
+    }
+
+    void test_parse_process()
+    {
+        std::string name;
+        std::vector<std::string> args;
+        ASSERT_EQUAL("no args", true,
+                     parse_process(ctx("[process name command]"), name, args));
+        ASSERT_EQUAL("no args", "name", name);
+        ASSERT_EQUAL("no args", 1, args.size());
+        ASSERT_EQUAL("no args", "command", args[0]);
+
+        ASSERT_EQUAL("args", true,
+                     parse_process(ctx("[process name cmd arg1 arg2]"),
+                                       name, args));
+        ASSERT_EQUAL("args", 3, args.size());
+        ASSERT_EQUAL("args", "cmd", args[0]);
+        ASSERT_EQUAL("args", "arg1", args[1]);
+        ASSERT_EQUAL("args", "arg2", args[2]);
     }
 
     void test_parse_line_call()

@@ -233,3 +233,32 @@ namespace plux
         }
     }
 }
+
+bool plux::Script::process_add(const std::string& name,
+                               const std::vector<std::string>& args)
+{
+    std::map<std::string, std::vector<std::string>>::iterator it =
+        _process_args.find(name);
+    if (it != _process_args.end()) {
+        return false;
+    }
+    _process_args[name] = args;
+    return true;
+}
+
+bool plux::Script::process_get(const ShellEnv& env, const std::string& name,
+                               std::vector<std::string>& args) const
+{
+    std::map<std::string, std::vector<std::string>>::const_iterator it =
+        _process_args.find(name);
+    if (it == _process_args.end()) {
+        return false;
+    }
+
+    const std::vector<std::string> &args_src = it->second;
+    std::vector<std::string>::const_iterator ait = args_src.begin();
+    for (; ait != args_src.end(); ++ait) {
+        args.push_back(plux::expand_var(env, name, *ait));
+    }
+    return true;
+}

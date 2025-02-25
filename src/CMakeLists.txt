@@ -20,6 +20,8 @@ set(libplux_SOURCES
   line.cc
   os.cc
   plux.cc
+  process.cc
+  process_base.cc
   regex.cc
   script.cc
   script_env.cc

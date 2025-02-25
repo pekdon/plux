@@ -8,19 +8,19 @@ if exists("b:current_syntax")
 endif
 
 " Keywords
-syntax keyword pluxKeyword cleanup doc enddoc function endfunction call shell
+syntax keyword pluxKeyword cleanup doc enddoc function endfunction call shell process
 syntax keyword pluxDebug log
 syntax keyword pluxInclude include
 syntax keyword pluxDefine local global
 
 " Matches
 syntax match pluxComment "#.*$"
-syntax match pluxInput "^\s*!.*$"
+syntax match pluxOutput "^\s*!.*$"
 syntax match pluxMatch "^\s*?{1,3}.*$"
 
 " Regions
 syntax region pluxDoc start="\[doc\]" end="\[enddoc\]"
-" syntax region pluxFunction start="\[function " end="\[endfunction\]"
+syntax region pluxFunction start="\[function.*\]" end="\[endfunction\]"
 
 " Hightlight
 highlight link pluxComment Comment

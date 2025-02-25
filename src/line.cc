@@ -84,8 +84,8 @@ re_escape_val(const std::string val)
 
 namespace plux
 {
-    std::string Line::expand_var(const ShellEnv& env, const std::string& shell,
-                                 const std::string& line) const
+    std::string expand_var(const ShellEnv& env, const std::string& shell,
+                           const std::string& line)
     {
         ExpandState s(env, shell);
 
@@ -128,9 +128,8 @@ namespace plux
         return s.exp_line;
     }
 
-    void Line::append_var_val(const ShellEnv& env, const std::string& shell,
-                              std::string& exp_str,
-                              const std::string& var) const
+    void append_var_val(const ShellEnv& env, const std::string& shell,
+                        std::string& exp_str, const std::string& var)
     {
         if (var.empty()) {
             throw ScriptError(shell, "empty variable name");

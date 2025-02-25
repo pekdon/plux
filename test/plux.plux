@@ -40,6 +40,7 @@ to verify that the provided scripts run as expected.
 	[call match-file-ok system/function.plux]
 	[call match-file-ok system/include.plux]
 	[call match-file-parse-error system/invalid.plux "invalid shell name: invalid/name. only A-Z, a-z, 0-9, - and _ allowed"]
+	[call match-file-ok system/process.plux]
 	[call match-file-ok system/shell_hook_init.plux]
 	[call match-file-error system/shell_hook_init_missing.plux "Error function missing-init in shell test"]
 	[call match-file-error system/timeout.plux "Timeout ?SH-PROMPT:"]

@@ -82,8 +82,9 @@ namespace plux
         virtual void push_function(void) override;
         virtual void pop_function(void) override;
 
-        virtual env_map_const_it os_begin(void) const override;
-        virtual env_map_const_it os_end(void) const override;
+        virtual void set_os_env() const;
+        virtual env_map_const_it os_begin() const override;
+        virtual env_map_const_it os_end() const override;
 
     private:
         bool get_env_global(const std::string& key, std::string& val_ret) const;
@@ -157,10 +158,14 @@ namespace plux
                                  const std::string& filename);
         ScriptResult run_set(const Line* line, const FunctionArgs& fargs);
 
-        enum line_status wait_for_input(int timeout_ms);
+        line_status wait_for_input(int timeout_ms);
+        line_status wait_for_input_poll(struct pollfd *fds, int num_fds,
+                                        int timeout_ms);
+        struct pollfd* mk_fds(int &num_fds);
+        line_status handle_signals();
 
         ShellCtx* get_or_init_shell(Line* line, const std::string& name);
-        Shell* init_shell(const std::string& name);
+        ShellCtx* init_shell(const std::string& name);
         ShellLog* init_shell_log(const std::string& name);
 
         std::string shell_name(ShellEnv& env, Line* line);
@@ -189,7 +194,7 @@ namespace plux
         /** Stop "signal" */
         bool _stop;
         /** Map from shell name to Shell */
-        std::map<std::string, Shell*> _shells;
+        std::map<std::string, ShellCtx*> _shells;
         /** Vector with all open Shell logs. */
         std::vector<ShellLog*> _shell_logs;
 

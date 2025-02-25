@@ -23,6 +23,9 @@ static void signal_handler(int signal)
     case SIGINT:
     case SIGTERM:
         break;
+    case SIGCHLD:
+        plux::sigchld = true;
+        break;
     }
 }
 
@@ -284,6 +287,7 @@ int main(int argc, char *argv[])
     sigaction(SIGHUP, &act, 0);
     sigaction(SIGTERM, &act, 0);
     sigaction(SIGINT, &act, 0);
+    sigaction(SIGCHLD, &act, 0);
 
     std::vector<std::string> files;
     find_plux_files(argc, argv, files);

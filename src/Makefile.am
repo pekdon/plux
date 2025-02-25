@@ -9,6 +9,8 @@ plux_SOURCES = \
     main.cc \
     os.cc os.hh \
     plux.cc plux.hh \
+    process.cc process.hh \
+    process_base.cc process_base.hh \
     regex.cc regex.hh \
     script.cc script.hh \
     script_env.cc script_env.hh \

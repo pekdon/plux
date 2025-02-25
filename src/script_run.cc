@@ -3,6 +3,7 @@
 #include <sstream>
 
 extern "C" {
+#include <sys/wait.h>
 #include <errno.h>
 #include <poll.h>
 #include <unistd.h>
@@ -10,6 +11,8 @@ extern "C" {
 
 #include "os.hh"
 #include "stdlib_builtins.hh"
+#include "process.hh"
+#include "script.hh"
 #include "script_parse.hh"
 #include "script_run.hh"
 
@@ -134,11 +137,19 @@ namespace plux
         _function.pop_back();
     }
 
-    env_map_const_it ShellEnvImpl::os_begin(void) const
+    void ShellEnvImpl::set_os_env() const
+    {
+        env_map_const_it it(os_begin());
+        for (; it != os_end(); ++it) {
+            setenv(it->first.c_str(), it->second.c_str(), 1 /* overwrite */);
+        }
+    }
+
+    env_map_const_it ShellEnvImpl::os_begin() const
     {
         return _os_env.begin();
     }
-    env_map_const_it ShellEnvImpl::os_end(void) const
+    env_map_const_it ShellEnvImpl::os_end() const
     {
         return _os_env.end();
     }
@@ -236,11 +247,11 @@ namespace plux
             throw ScriptException("stopped");
         }
 
-        auto line_shell_name = this->shell_name(_env, line);
+        auto line_shell_name = shell_name(_env, line);
         _log << "ScriptRun" << "run_line " << line_shell_name << " "
              << line->to_string() << LOG_LEVEL_DEBUG;
 
-        auto shell = get_or_init_shell(line, line_shell_name);
+        ShellCtx* shell = get_or_init_shell(line, line_shell_name);
         _timeout.set_timeout_ms(shell->timeout());
         _timeout.restart();
 
@@ -396,44 +407,103 @@ namespace plux
     {
         _log << "ScriptRun" << "wait for input on " << _shells.size()
              << " shells" << LOG_LEVEL_TRACE;
-        std::unique_ptr<struct pollfd[]> fds(new pollfd[_shells.size()]);
-        std::map<std::string, Shell*>::iterator it;
 
-        it = _shells.begin();
-        for (int i = 0; it != _shells.end(); ++it, ++i) {
-            fds[i].fd = it->second->fd();
-            fds[i].events = POLLIN;
-            fds[i].revents = 0;
+        int num_fds;
+        std::unique_ptr<struct pollfd[]> fds(mk_fds(num_fds));
+
+        line_status status = wait_for_input_poll(fds.get(), num_fds,
+                                                 timeout_ms);
+        if (status != RES_OK) {
+            return status;
         }
 
-        int ret = poll(fds.get(), _shells.size(), timeout_ms);
-        if (ret == 0) {
-            _log.debug("ScriptRun", "poll timeout");
-            return RES_TIMEOUT;
-        } else if (ret == -1) {
-            _log << "ScriptRun" << "poll failed: " << strerror(errno)
-                 << LOG_LEVEL_ERROR;
-            return RES_ERROR;
-        }
-
-        it = _shells.begin();
+        auto it = _shells.begin();
         for (size_t i = 0; i < _shells.size(); ++it, i++) {
             if (fds[i].revents & POLLIN) {
                 char buf[4096];
-                ssize_t nread = read(it->second->fd(), buf, sizeof(buf));
+                ssize_t nread = read(it->second->fd_input(), buf, sizeof(buf));
                 if (nread == -1) {
                     _log << "ScriptRun" << "read failed: " << strerror(errno)
                          << LOG_LEVEL_ERROR;
                     return RES_ERROR;
                 } else if (nread == 0) {
-                    _log.debug("ScriptRun", "empty read, treat as timeout");
-                    return RES_TIMEOUT;
+                    if (it->second->is_alive()) {
+                        _log.debug("ScriptRun", "empty read from alive shell, "
+                                   "treat as timeout");
+                        return RES_TIMEOUT;
+                    }
+                    _log.debug("ScriptRun", "empty read from dead shell, "
+                               "remove shell");
+                    it = _shells.erase(it);
                 } else {
                     it->second->output(buf, nread);
                 }
             }
         }
 
+        return RES_OK;
+    }
+
+    line_status ScriptRun::wait_for_input_poll(struct pollfd *fds, int num_fds,
+                                               int timeout_ms)
+    {
+        handle_signals();
+        line_status res = RES_OK;
+        while (res == RES_OK) {
+            int ret = poll(fds, num_fds, timeout_ms);
+            if (ret > 0) {
+                return RES_OK;
+            }
+
+            if (ret == -1) {
+                if (errno == EINTR) {
+                    res = handle_signals();
+                } else {
+                    _log << "ScriptRun" << "poll failed: " << strerror(errno)
+                         << LOG_LEVEL_ERROR;
+                    res = RES_ERROR;
+                }
+            } else {
+                _log.debug("ScriptRun", "poll timeout");
+                res = RES_TIMEOUT;
+            }
+        }
+        return res;
+    }
+
+    struct pollfd* ScriptRun::mk_fds(int &num_fds)
+    {
+        num_fds = _shells.size();
+        struct pollfd *fds = new struct pollfd[num_fds];
+        auto it = _shells.begin();
+        for (int i = 0; it != _shells.end(); ++it) {
+            fds[i].fd = it->second->fd_input();
+            fds[i].events = POLLIN;
+            fds[i].revents = 0;
+            i++;
+        }
+        return fds;
+    }
+
+    line_status ScriptRun::handle_signals()
+    {
+        if (! plux::sigchld) {
+            return RES_ERROR;
+        }
+
+        int status;
+        pid_t pid = waitpid(-1, &status, WNOHANG);
+        while (pid > 0) {
+            auto it = _shells.begin();
+            for (; it != _shells.end(); ++it) {
+                if (it->second->pid() == pid) {
+                    it->second->set_alive(false, WEXITSTATUS(status));
+                    break;
+                }
+            }
+            pid = waitpid(-1, &status, WNOHANG);
+        }
+        plux::sigchld = false;
         return RES_OK;
     }
 
@@ -444,12 +514,12 @@ namespace plux
             return it->second;
         }
 
-        _log.debug("ScriptRun", "starting new shell " + name);
-        auto shell = init_shell(name);
+        ShellCtx *shell = init_shell(name);
         _shells[name] = shell;
         _log.trace("ScriptRun", "started new shell " + name);
 
-        if (! _shell_hook_init.empty()) {
+        if (! _shell_hook_init.empty()
+            && dynamic_cast<Shell*>(shell) != nullptr) {
             FunctionArgs fargs(_shell_hook_init);
             run_function(fargs, line, name);
         }
@@ -457,10 +527,19 @@ namespace plux
         return shell;
     }
 
-    Shell* ScriptRun::init_shell(const std::string& name)
+    ShellCtx* ScriptRun::init_shell(const std::string& name)
     {
         ShellLog* shell_log = init_shell_log(name);
-        return new Shell(_log, shell_log, _progress_log, name, SH, _env);
+        std::vector<std::string> args;
+        if (_scripts.back()->process_get(_env, name, args)) {
+            _log.debug("ScriptRun", "starting new process " + name
+                       + " command " + args[0]);
+            return new Process(_log, shell_log, _progress_log, name, args,
+                               _env);
+        } else {
+            _log.debug("ScriptRun", "starting new shell " + name);
+            return new Shell(_log, shell_log, _progress_log, name, SH, _env);
+        }
     }
 
     ShellLog* ScriptRun::init_shell_log(const std::string& name)

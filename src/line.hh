@@ -58,6 +58,11 @@ namespace plux
         FunctionArgs _fargs;
     };
 
+    std::string expand_var(const ShellEnv& env, const std::string& shell,
+                           const std::string& line);
+    void append_var_val(const ShellEnv& env, const std::string& shell,
+                        std::string& exp_str, const std::string& var);
+
     /**
      * Any line in headers or in shell or cleanup.
      */
@@ -87,12 +92,6 @@ namespace plux
         {
             return plux::empty_string;
         }
-
-    protected:
-        std::string expand_var(const ShellEnv& env, const std::string& shell,
-                               const std::string& str) const;
-        void append_var_val(const ShellEnv& env, const std::string& shell,
-                            std::string& exp_str, const std::string& var) const;
 
     private:
         /** file line was parsed in. */

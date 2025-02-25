@@ -7,32 +7,6 @@
 
 namespace plux
 {
-    ScriptParseError::ScriptParseError(const std::string& path,
-                                       unsigned int linenumber,
-                                       const std::string& line,
-                                       const std::string& error) throw()
-        : _path(path),
-          _linenumber(linenumber),
-          _line(line),
-          _error(error)
-    {
-    }
-
-    ScriptParseError::~ScriptParseError(void) throw()
-    {
-    }
-
-    /**
-     * Script parser state, transitions go in order of apperance.
-     */
-    enum parse_state {
-        PARSE_STATE_BEGIN,
-        PARSE_STATE_DOC,
-        PARSE_STATE_HEADERS,
-        PARSE_STATE_SHELL,
-        PARSE_STATE_CLEANUP
-    };
-
     /** Textual representation of pattern matching shell names, keep
         in sync with _shell_name_regex. */
     std::string ScriptParse::SHELL_NAME_CHARS = "A-Z, a-z, 0-9, - and _";
@@ -85,8 +59,9 @@ namespace plux
                 }
                 break;
             case PARSE_STATE_HEADERS:
-                if (parse_shell(ctx, ctx.shell)) {
-                    state = PARSE_STATE_SHELL;
+                if (parse_shell(ctx, ctx.shell)
+                    || parse_process(ctx, ctx.shell, ctx.process_args)) {
+                    state = set_parse_state_shell(ctx, *script);
                 } else if (ctx.starts_with("[function ")) {
                     auto fun = parse_function(ctx);
                     script->env().fun_set(fun->name(), fun);
@@ -101,7 +76,9 @@ namespace plux
                 }
                 break;
             case PARSE_STATE_SHELL:
-                if (parse_shell(ctx, ctx.shell)) {
+                if (parse_shell(ctx, ctx.shell)
+                    || parse_process(ctx, ctx.shell, ctx.process_args)) {
+                    state = set_parse_state_shell(ctx, *script);
                 } else if (ctx.starts_with("[cleanup]")) {
                    state = PARSE_STATE_CLEANUP;
                    ctx.shell = "cleanup";
@@ -141,13 +118,66 @@ namespace plux
         }
 
         std::string name = ctx.substr(7, 1);
-        if (! plux::regex_match(name, _shell_name_regex)
-            || name.compare("cleanup") == 0) {
-            std::string error("invalid shell name: ");
-            error +=  name + ". only " + SHELL_NAME_CHARS + " allowed";
-            parse_error(ctx.line, error);
-        }
+        assert_shell_name(ctx, name);
+
         shell_ret = name;
+        return true;
+    }
+
+    /**
+     * Parse [process name command arg...] command.
+     *
+     * @return true if line is a valid process line, false if not a process
+     *         command.
+     */
+    bool ScriptParse::parse_process(const ScriptParseCtx& ctx,
+                                    std::string& shell_ret,
+                                    std::vector<std::string> &args_ret)
+    {
+        if (! ctx.starts_with("[process ")) {
+            return false;
+        }
+
+        if (! ctx.ends_with("]")) {
+            parse_error(ctx.line, "process command does not end with ]");
+        }
+
+        std::string line = ctx.substr(9, 1);
+
+        // parse name
+        size_t name_end = plux::str_scan(line, 0, " ");
+        if (name_end == std::string::npos) {
+            parse_error(ctx.line, "process require both name and command");
+        }
+        std::string name = line.substr(0, name_end);
+        assert_shell_name(ctx, name);
+
+        // parse command
+        size_t command_end = plux::str_scan(line, name_end + 1, " ");
+        std::vector<std::string> args;
+        if (command_end == std::string::npos) {
+            // no arguments
+            args.push_back(line.substr(name_end + 1,
+                                       line.size() - name_end - 1));
+        } else {
+            args.push_back(line.substr(name_end + 1,
+                                       command_end - name_end - 1));
+            // parse arguments
+            size_t arg_start = command_end + 1;
+            size_t arg_end = plux::str_scan(line, arg_start, " ");
+            while (arg_end != std::string::npos) {
+                args.push_back(line.substr(arg_start, arg_end - arg_start));
+                arg_start = arg_end + 1;
+                arg_end = plux::str_scan(line, arg_start, " ");
+            }
+
+            if (arg_start < line.size()) {
+                args.push_back(line.substr(arg_start));
+            }
+        }
+
+        shell_ret = name;
+        args_ret = args;
         return true;
     }
 
@@ -421,4 +451,28 @@ namespace plux
     {
         throw ScriptParseError(_path, _linenumber, line, error);
     }
+}
+
+void plux::ScriptParse::assert_shell_name(const ScriptParseCtx& ctx,
+                                          const std::string& name)
+{
+    if (! plux::regex_match(name, _shell_name_regex)
+        || name.compare("cleanup") == 0) {
+        std::string error("invalid shell name: ");
+        error +=  name + ". only " + SHELL_NAME_CHARS + " allowed";
+        parse_error(ctx.line, error);
+    }
+}
+
+plux::parse_state
+plux::ScriptParse::set_parse_state_shell(ScriptParseCtx& ctx, Script &script)
+{
+    if (! ctx.process_args.empty()
+        && ! script.process_add(ctx.shell, ctx.process_args)) {
+        std::string error("duplicate process definition: ");
+        error += ctx.shell;
+        parse_error(ctx.line, error);
+    }
+    ctx.process_args.clear();
+    return PARSE_STATE_SHELL;
 }

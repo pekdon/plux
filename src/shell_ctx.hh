@@ -68,8 +68,8 @@ namespace plux
      */
     class ShellEnv {
     public:
-        ShellEnv(void) { }
-        virtual ~ShellEnv(void) { }
+        ShellEnv() = default;
+        virtual ~ShellEnv() = default;
 
         virtual bool get_env(const std::string& shell, const std::string& key,
                              std::string& val_ret) const = 0;
@@ -81,8 +81,9 @@ namespace plux
         /** Leave a function scope, drop all function scoped variables. */
         virtual void pop_function(void) = 0;
 
-        virtual env_map_const_it os_begin(void) const = 0;
-        virtual env_map_const_it os_end(void) const = 0;
+        virtual void set_os_env() const = 0;
+        virtual env_map_const_it os_begin() const = 0;
+        virtual env_map_const_it os_end() const = 0;
     };
 
     /**
@@ -93,10 +94,15 @@ namespace plux
         typedef std::vector<std::string> line_vector;
         typedef line_vector::iterator line_it;
 
-        explicit ShellCtx(void) { }
-        virtual ~ShellCtx(void) { }
+        explicit ShellCtx() = default;
+        virtual ~ShellCtx() = default;
 
-        virtual const std::string& name(void) const = 0;
+        virtual const std::string& name() const = 0;
+        virtual bool is_alive() const = 0;
+        virtual void set_alive(bool alive, int exitstatus) = 0;
+        virtual int exitstatus() const = 0;
+        virtual pid_t pid() const = 0;
+
         virtual void progress_log(const std::string& msg) = 0;
         virtual void progress_log(const std::string& context,
                                   const std::string& msg) = 0;
@@ -108,8 +114,11 @@ namespace plux
         /** Set timeout for shell */
         virtual void set_timeout(unsigned int timeout_ms) = 0;
 
+        virtual int fd_input() const = 0;
+        virtual int fd_output() const = 0;
         virtual bool input(const std::string& data) = 0;
         virtual void output(const char* data, ssize_t size) = 0;
+        virtual void stop() = 0;
 
         virtual line_it line_begin(void) = 0;
         virtual line_it line_end(void) = 0;

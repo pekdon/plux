@@ -10,53 +10,17 @@
 
 namespace plux
 {
-    /**
-     * Exception thrown if parsing of script fails due to incorrect or
-     * incomplete input.
-     */
-    class ScriptParseError : public PluxException {
-    public:
-        ScriptParseError(const std::string& path,
-                         unsigned int linenumber,
-                         const std::string& line,
-                         const std::string& error) throw();
-        virtual ~ScriptParseError(void) throw();
-
-        const std::string& path(void) const { return _path; }
-        unsigned int linenumber(void) const { return _linenumber; }
-        const std::string& line(void) const { return _line; }
-        const std::string& error(void) const { return _error; }
-
-        virtual std::string info(void) const override { return _error; }
-        virtual std::string to_string(void) const override {
-            std::ostringstream buf("ScriptParseError: ");
-            buf << _path << ":" << _linenumber << " " << _error << std::endl
-                << _line;
-            return buf.str();
-        }
-
-    private:
-        /** Path to file parse error occurred in. */
-        std::string _path;
-        /** Line in file parse error occurred at. */
-        unsigned int _linenumber;
-        /** Line data parse occured on. */
-        std::string _line;
-        /** Human readable error message. */
-        std::string _error;
-    };
-
     class ScriptParseCtx {
     public:
         ScriptParseCtx(void)
             : start(0)
         {
         }
-        ~ScriptParseCtx(void) { }
 
         std::string line;
         std::string::size_type start;
         std::string shell;
+        std::vector<std::string> process_args;
 
         bool starts_with(const std::string& str) const {
             if ((str.size() + start) > line.size()) {
@@ -84,6 +48,17 @@ namespace plux
     };
 
     /**
+     * Script parser state, transitions go in order of apperance.
+     */
+    enum parse_state {
+        PARSE_STATE_BEGIN,
+        PARSE_STATE_DOC,
+        PARSE_STATE_HEADERS,
+        PARSE_STATE_SHELL,
+        PARSE_STATE_CLEANUP
+    };
+
+    /**
      * PLUX script parser.
      */
     class ScriptParse {
@@ -99,6 +74,8 @@ namespace plux
         bool next_line(ScriptParseCtx& ctx);
 
         bool parse_shell(const ScriptParseCtx& ctx, std::string& shell_ret);
+        bool parse_process(const ScriptParseCtx& ctx, std::string& shell_ret,
+                           std::vector<std::string> &args);
 
         Line* parse_header_cmd(const ScriptParseCtx& ctx, Script* script);
         Line* parse_line_cmd(const ScriptParseCtx& ctx);
@@ -125,6 +102,10 @@ namespace plux
         void parse_error(const std::string& line, const std::string& error);
 
     private:
+        void assert_shell_name(const ScriptParseCtx& ctx,
+                               const std::string& name);
+        parse_state set_parse_state_shell(ScriptParseCtx& ctx, Script &script);
+
         /** Path to file being parsed. */
         std::string _path;
         /** Opened input stream for path. */

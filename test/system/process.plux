@@ -1,0 +1,22 @@
+[doc]
+Test [process]
+
+Run processes without a shell in-between. Test I/O, missing commands and
+process termination.
+[enddoc]
+
+[process echo ./system/process_echo.sh]
+	!input
+	[log wait for echo]
+	?ECHO: input
+
+[process args ./system/process_args.sh arg1 arg2]
+	?1: arg1
+	?2: arg2
+	[log wait for PROCESS-EXIT]
+	?PROCESS-EXIT: 0
+
+[process missing ./system/process_missing.sh]
+	[log wait for failed to exec]
+	???Process: failed to exec ./system/process_missing.sh:
+	?PROCESS-EXIT: 127

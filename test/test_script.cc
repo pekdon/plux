@@ -13,11 +13,25 @@ class ShellCtxTest : public plux::ShellCtx {
 public:
     ShellCtxTest()
         : _name("my-shell"),
-          _timeout_ms(-1)
+          _timeout_ms(-1),
+          _is_alive(true),
+          _exitstatus(-1)
     {
     }
 
     virtual ~ShellCtxTest() { }
+
+    pid_t pid() const override { return 1; }
+    bool is_alive() const override { return _is_alive; }
+    void set_alive(bool alive, int exitstatus) override
+    {
+        _is_alive = alive;
+        _exitstatus = exitstatus;
+    }
+    int exitstatus() const { return _exitstatus; }
+    int fd_input() const override { return -1; }
+    int fd_output() const override { return -1; }
+    void stop() override { }
 
     virtual const std::string& name() const override { return _name; }
     virtual void progress_log(const std::string& msg) override { }
@@ -53,6 +67,8 @@ public:
 private:
     std::string _name;
     unsigned int _timeout_ms;
+    bool _is_alive;
+    int _exitstatus;
     std::string _error_pattern;
     plux::ShellCtx::line_vector _lines;
 

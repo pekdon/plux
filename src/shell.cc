@@ -29,197 +29,71 @@ extern "C" {
 #include "compat.h"
 #include "shell.hh"
 
-namespace plux
+plux::Shell::Shell(Log& log,
+                   ShellLog* shell_log,
+                   ProgressLog& progress_log,
+                   const std::string& name,
+                   const std::string& command,
+                   ShellEnv& shell_env)
+    : ProcessBase(log, shell_log, progress_log, name, command, shell_env),
+      _fd(-1)
 {
-    ShellException::ShellException(const std::string& shell,
-                                   const std::string& error) throw()
-        : _shell(shell),
-          _error(error)
-    {
+    pid_t pid = forkpty(&_fd, nullptr, nullptr, nullptr);
+    if (pid < 0) {
+        log_and_throw_strerror("forkpty failed");
     }
 
-    ShellException::~ShellException(void) throw()
-    {
+    set_pid(pid);
+    if (pid == 0) {
+        _shell_env.set_os_env();
+        execlp(command.c_str(), command.c_str(), nullptr);
+        _log << "Shell failed to exec shell " << command << ": "
+             << strerror(errno) << LOG_LEVEL_ERROR;
+        exit(1);
     }
 
-    Shell::Shell(Log& log,
-                 ShellLog* shell_log,
-                 ProgressLog& progress_log,
-                 const std::string& name,
-                 const std::string& command,
-                 ShellEnv& shell_env)
-        : _log(log),
-          _shell_log(shell_log),
-          _progress_log(progress_log),
-          _name(name),
-          _timeout_ms(plux::default_timeout_ms),
-          _command(command),
-          _shell_env(shell_env),
-          _buf_matched(false),
-          _fd(-1),
-          _pid(forkpty(&_fd, nullptr, nullptr, nullptr))
-
-    {
-        if (_pid < 0) {
-            log_and_throw_strerror("forkpty failed");
-        }
-
-        if (_pid == 0) {
-            env_map_const_it it(_shell_env.os_begin());
-            for (; it != _shell_env.os_end(); ++it) {
-                setenv(it->first.c_str(), it->second.c_str(),
-                       1 /* overwrite */);
-            }
-
-            execlp(command.c_str(), command.c_str(), nullptr);
-            _log << "Shell" << "failed to exec shell " << command << ": "
-                 << strerror(errno) << LOG_LEVEL_ERROR;
-            exit(1);
-        }
-
-        int flags = fcntl(_fd, F_GETFL, 0);
-        if (flags == -1) {
-            stop_pid(_pid);
-            log_and_throw_strerror("failed to get flags from PTY fd");
-        }
-        int ret = fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
-        if (ret == -1) {
-            log_and_throw_strerror("failed to set O_NONBLOCK flag on PTY fd");
-        }
+    int flags = fcntl(_fd, F_GETFL, 0);
+    if (flags == -1) {
+        stop_pid(true);
+        log_and_throw_strerror("failed to get flags from PTY fd");
     }
-
-    Shell::~Shell(void)
-    {
-        stop();
-        kill(_pid, SIGKILL);
-        int status;
-        std::string pid_str = std::to_string(static_cast<int>(_pid));
-        _log.trace("shell", "waiting for pid " + pid_str + " to finish");
-        waitpid(_pid, &status, 0);
-        _log.trace("shell", "pid " + pid_str + " finished with "
-                   + std::to_string(WEXITSTATUS(status)));
+    int ret = fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
+    if (ret == -1) {
+        log_and_throw_strerror("failed to set O_NONBLOCK flag on PTY fd");
     }
+}
 
-    void Shell::stop(void)
-    {
-        if (_fd != -1) {
-            // Ctrl-C (signal ongoing command)
-            write(_fd, "\003", 1);
-            // Ctrl-D (try to exit the shell)
-            write(_fd, "\004", 1);
-            // Close and then kill with signal
-            close(_fd);
-            _fd = -1;
-        }
-    }
+plux::Shell::~Shell(void)
+{
+    Shell::stop();
+    stop_pid(true);
+}
 
-    /**
-     * Progress log message.
-     */
-    void Shell::progress_log(const std::string& msg)
-    {
-        std::cout << format_timestamp() << ": [" << _name << "] " << msg
-                  << std::endl;
-        _progress_log.log(_name, msg);
-    }
+void plux::Shell::set_alive(bool alive, int exitstatus)
+{
+    _is_alive = alive;
+    _exitstatus = exitstatus;
+}
 
-    /**
-     * Progress log message with line context.
-     */
-    void Shell::progress_log(const std::string& context, const std::string& msg)
-    {
-        std::cout << format_timestamp() << " " << context << " [" << _name
-                  << "] " << msg << std::endl;
-        _progress_log.log(_name, msg);
-    }
+int plux::Shell::fd_input() const
+{
+    return _fd;
+}
 
-    /**
-     * Send input to shell.
-     *
-     * @return true if all data was written, else false.
-     */
-    bool Shell::input(const std::string& data)
-    {
-        _shell_log->input(data);
+int plux::Shell::fd_output() const
+{
+    return _fd;
+}
 
-        size_t nleft = data.size();
-        do {
-            int ret = write(_fd, data.c_str(), data.size());
-            if (ret == -1) {
-                if (errno == EAGAIN) {
-                    // FIXME: add POLLOUT to wait_for_input for given
-                    // shell.
-                }
-                return false;
-            }
-            nleft -= ret;
-        } while (nleft > 0);
-
-        return true;
-    }
-
-    void Shell::output(const char* data, ssize_t size)
-    {
-        _shell_log->output(data, size);
-
-        for (ssize_t i = 0; i < size; i++) {
-            if (data[i] == '\n') {
-                if (! _buf.empty() && _buf[_buf.size() - 1] == '\r') {
-                    _buf.erase(_buf.size() - 1);
-                }
-
-                match_error(_buf, true);
-
-                if (! _buf_matched) {
-                    _lines.push_back(_buf);
-                }
-                _buf = "";
-                _buf_matched = false;
-            } else {
-                _buf += data[i];
-            }
-        }
-        match_error(_buf, false);
-    }
-
-    void Shell::line_consume_until(line_it it)
-    {
-        _lines.erase(_lines.begin(), it);
-    }
-
-    void Shell::match_error(const std::string& line, bool is_line)
-    {
-        if (_error_pattern.empty()) {
-            return;
-        }
-        if (! is_line && _error_pattern[_error_pattern.size() - 1] == '$') {
-            return;
-        }
-
-        if (plux::regex_search(line, _error)) {
-            throw ShellException(_name,
-                                 std::string("error pattern ") +
-                                 _error_pattern + " matched");
-        }
-    }
-
-    void Shell::stop_pid(pid_t pid)
-    {
-        if (! kill(pid, SIGKILL)) {
-            _log << "Shell" << "sent SIGKILL to " << pid << ", waiting for stop"
-                 << LOG_LEVEL_INFO;
-            // FIXME: wait timeout..
-            int exitcode;
-            waitpid(pid, &exitcode, WNOHANG);
-        } else {
-            _log << "Shell" << "failed to send SIGKILL to " << pid
-                 << ": " << strerror(errno) << LOG_LEVEL_ERROR;
-        }
-    }
-
-    void Shell::log_and_throw_strerror(const std::string& msg)
-    {
-        _log << "Shell" << msg << ": " << strerror(errno) << LOG_LEVEL_ERROR;
-        throw ShellException(_name, msg);
+void plux::Shell::stop()
+{
+    if (_fd != -1) {
+        // Ctrl-C (signal ongoing command)
+        write(_fd, "\003", 1);
+        // Ctrl-D (try to exit the shell)
+        write(_fd, "\004", 1);
+        // Close and then kill with signal
+        close(_fd);
+        _fd = -1;
     }
 }

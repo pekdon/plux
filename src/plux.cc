@@ -122,4 +122,6 @@ namespace plux
         {"_COLOR_WHITE_", COLOR_WHITE},
         {"_COLOR_RESET_", COLOR_RESET}
     };
+
+    bool sigchld = false;
 }
