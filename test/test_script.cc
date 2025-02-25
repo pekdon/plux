@@ -6,6 +6,8 @@
 #include "script_run.hh"
 #include "shell_log.hh"
 
+#include "test_script_output_format.hh"
+
 /**
  * ShellCtx user for testing.
  */
@@ -424,6 +426,7 @@ int main(int argc, char *argv[])
     TestLineVarMatch test_var_match;
     TestLineRegexMatch test_re_match;
     TestLineTimeout test_timeout;
+    TestOutputFormat test_output_format;
 
     try {
         return TestSuite::main(argc, argv);

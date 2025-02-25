@@ -80,6 +80,8 @@ namespace plux
         Line* parse_header_cmd(const ScriptParseCtx& ctx, Script* script);
         Line* parse_line_cmd(const ScriptParseCtx& ctx);
 
+        Line* parse_output(const ScriptParseCtx& ctx);
+        Line* parse_output_format(const ScriptParseCtx& ctx);
         Line* parse_include(const ScriptParseCtx& ctx);
         Line* parse_config(const ScriptParseCtx& ctx, Script* script);
         template<typename T>

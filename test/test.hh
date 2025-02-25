@@ -28,10 +28,13 @@ private:
     if ((expected) != (actual)) {                                       \
         std::ostringstream oss;                                         \
         oss << (msg)                                                    \
-            << " expected " << (expected)                               \
-            << " got " << (actual);                                     \
+            << " expected |" << (expected)                              \
+            << "| got |" << (actual) << "|";                            \
         throw AssertFailed(__FILE__, __LINE__, oss.str());              \
     }
+
+#define ASSERT_TRUE(msg, actual) ASSERT_EQUAL(msg, true, actual)
+#define ASSERT_FALSE(msg, actual) ASSERT_EQUAL(msg, false, actual)
 
 #define ASSERT_NOT_NULL(msg, actual)                                    \
     if ((actual) == nullptr) {                                          \

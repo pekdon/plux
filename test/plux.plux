@@ -6,6 +6,7 @@ to verify that the provided scripts run as expected.
 [enddoc]
 
 [global BIN_DIR=../build/src]
+[global TEST_BIN_DIR=../build/test/system]
 
 [function match-file-ok file]
 	??$file

@@ -29,7 +29,9 @@ namespace plux
         size_t _len;
     };
 
-    size_t str_split(const std::string& str, std::vector<std::string>& toks);
+    size_t str_split(const std::string& str, size_t pos,
+                     std::vector<std::string>& toks);
+    std::string str_unescape(const std::string& src, size_t pos, size_t len);
     size_t str_scan(const std::string& str, size_t pos,
                     const std::string& end);
     sview str_view(const std::string& str, size_t pos, size_t len);

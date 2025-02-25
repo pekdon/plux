@@ -206,12 +206,9 @@ namespace plux
     Line* ScriptParse::parse_line_cmd(const ScriptParseCtx& ctx)
     {
         if (ctx.starts_with("!")) {
-            auto output = ctx.substr(1, 0);
-            // FIXME: add list of control characters
-            if (output != "$_CTRL_C_") {
-                output += "\n";
-            }
-            return new LineOutput(_path, _linenumber, ctx.shell, output);
+            return parse_output(ctx);
+        } else if (ctx.starts_with("%")) {
+            return parse_output_format(ctx);
         } else if (ctx.starts_with("?")) {
             auto match_start = ctx.line.find_first_not_of("?", ctx.start);
             if ((match_start - ctx.start) == 1) {
@@ -248,6 +245,32 @@ namespace plux
             parse_error(ctx.line, "unexpected content");
         }
         return nullptr;
+    }
+
+    Line* ScriptParse::parse_output(const ScriptParseCtx& ctx)
+    {
+        auto output = ctx.substr(1, 0);
+        // FIXME: add list of control characters
+        if (output != "$_CTRL_C_") {
+            output += "\n";
+        }
+        return new LineOutput(_path, _linenumber, ctx.shell, output);
+    }
+
+    Line* ScriptParse::parse_output_format(const ScriptParseCtx& ctx)
+    {
+        auto src = ctx.substr(1, 0);
+
+        size_t fmt_end = str_scan(src, 0, " -- ");
+        std::string fmt;
+        OutputFormat::string_vector args;
+        if (fmt_end == std::string::npos) {
+            fmt = str_unescape(src, 0, src.size());
+        } else {
+            fmt = str_unescape(src, 0, fmt_end);
+            str_split(src, fmt_end + 4, args);
+        }
+        return new LineOutputFormat(_path, _linenumber, ctx.shell, fmt, args);
     }
 
     Line* ScriptParse::parse_timeout(const ScriptParseCtx& ctx)
@@ -439,7 +462,7 @@ namespace plux
     {
         start = ctx.line.find_first_not_of(" \t", start);
         auto end = ctx.line.size() - (ctx.ends_with("]") ? 1 : 0);
-        str_split(ctx.line.substr(start, end - start), args);
+        str_split(ctx.line.substr(start, end - start), 0, args);
     }
 
     /**

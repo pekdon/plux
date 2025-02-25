@@ -109,6 +109,28 @@ namespace plux
             _output.substr(0, _output.size() - 1);
     }
 
+    LineRes LineOutputFormat::run(ShellCtx& ctx, ShellEnv& env)
+    {
+        OutputFormat::string_vector expanded_args;
+        for (auto &arg : _args) {
+            expanded_args.push_back(expand_var(env, shell(), arg));
+        }
+        std::string expanded_output;
+        OutputFormat of(_fmt, expanded_args);
+        if (! of.format(expanded_output)) {
+            LineRes res(RES_ERROR);
+            res.set_error(of.error());
+            return res;
+        }
+        ctx.input(expanded_output);
+        return LineRes(RES_OK);
+    }
+
+    std::string LineOutputFormat::to_string() const
+    {
+        return std::string("LineOutputFormat ") + _fmt;
+    }
+
     LineRes LineTimeout::run(ShellCtx& ctx, ShellEnv& env)
     {
         ctx.set_timeout(timeout());

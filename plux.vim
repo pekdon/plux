@@ -16,6 +16,7 @@ syntax keyword pluxDefine local global
 " Matches
 syntax match pluxComment "#.*$"
 syntax match pluxOutput "^\s*!.*$"
+syntax match pluxOutputFormat "^\s*%.*$"
 syntax match pluxMatch "^\s*?{1,3}.*$"
 
 " Regions

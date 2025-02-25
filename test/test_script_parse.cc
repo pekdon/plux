@@ -108,6 +108,9 @@ public:
         register_test("parse_line_cmd_output",
                       std::bind(&TestScriptParse::test_parse_line_cmd_output,
                                 this));
+        register_test("parse_line_cmd_output_format",
+                std::bind(&TestScriptParse::test_parse_line_cmd_output_format,
+                          this));
         register_test("parse_line_cmd_error",
                       std::bind(&TestScriptParse::test_parse_line_cmd_error,
                                 this));
@@ -166,6 +169,7 @@ public:
         ASSERT_NOT_NULL("line", line);
         auto set_line = dynamic_cast<plux::HeaderConfigSet*>(line);
         ASSERT_NOT_NULL("set line", set_line);
+        delete line;
     }
 
     void test_parse_function()
@@ -313,6 +317,26 @@ public:
         delete line;
     }
 
+    void test_parse_line_cmd_output_format()
+    {
+        plux::Line* line;
+
+        line = parse_line_cmd(ctx("%%u8[0] %s[1]\\n -- 65 \"new world!\""));
+        auto ofline = dynamic_cast<plux::LineOutputFormat*>(line);
+        ASSERT_EQUAL("output_format", true, ofline != nullptr);
+        ASSERT_EQUAL("output_format", "%u8[0] %s[1]\n", ofline->fmt());
+        ASSERT_EQUAL("output_format", "65", ofline->args()[0]);
+        ASSERT_EQUAL("output_format", "new world!", ofline->args()[1]);
+        delete line;
+
+        line = parse_line_cmd(ctx("%%u32[len(0)]%s[0] -- \"TimeOfDay $tod\""));
+        ofline = dynamic_cast<plux::LineOutputFormat*>(line);
+        ASSERT_EQUAL("output_format", true, ofline != nullptr);
+        ASSERT_EQUAL("output_format", "%u32[len(0)]%s[0]", ofline->fmt());
+        ASSERT_EQUAL("output_format", "TimeOfDay $tod", ofline->args()[0]);
+        delete line;
+    }
+
     void test_parse_line_cmd_error()
     {
         plux::Line* line;
@@ -413,7 +437,7 @@ public:
     void test_parse_line_cmd_unknown()
     {
         try {
-            parse_line_cmd(ctx("% unknown command"));
+            parse_line_cmd(ctx("& unknown command"));
             ASSERT_EQUAL("unknown", false, true);
         } catch (plux::ScriptParseError& ex) {
             ASSERT_EQUAL("unknown", "unexpected content",

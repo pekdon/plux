@@ -3,7 +3,8 @@
 /**
  * Split string into tokens supporting quotation.
  */
-size_t plux::str_split(const std::string& str, std::vector<std::string>& toks)
+size_t plux::str_split(const std::string& str, size_t pos,
+                       std::vector<std::string>& toks)
 {
     bool in_tok = false;
     bool in_escape = false;
@@ -11,7 +12,7 @@ size_t plux::str_split(const std::string& str, std::vector<std::string>& toks)
     size_t start_size = toks.size();
 
     std::string tok;
-    for (size_t pos = 0; pos < str.size(); ++pos) {
+    for (; pos < str.size(); ++pos) {
         char chr = str[pos];
         if (! in_tok && ! isspace(chr)) {
             in_tok = true;
@@ -47,6 +48,42 @@ size_t plux::str_split(const std::string& str, std::vector<std::string>& toks)
     }
 
     return toks.size() - start_size;
+}
+
+/**
+ * Un-escape backslash escaped content in string, inserting newlines etc for
+ * known special characters.
+ */
+std::string plux::str_unescape(const std::string& src, size_t pos, size_t len)
+{
+    std::string dst;
+    bool in_escape = false;
+    size_t end = std::min(pos + len, src.size());
+    for (; pos < end; ++pos) {
+        char chr = src[pos];
+        if (in_escape) {
+            in_escape = false;
+            switch (chr) {
+            case 'n':
+                dst += '\n';
+                break;
+            case 't':
+                dst += '\t';
+                break;
+            case 'r':
+                dst += '\r';
+                break;
+            default:
+                dst += chr;
+                break;
+            }
+        } else if (chr == '\\') {
+            in_escape = true;
+        } else {
+            dst += chr;
+        }
+    }
+    return dst;
 }
 
 /**

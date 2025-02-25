@@ -18,6 +18,7 @@ set(libplux_SOURCES
   forkpty.cc
   log.cc
   line.cc
+  output_format.cc
   os.cc
   plux.cc
   process.cc

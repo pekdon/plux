@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 
+#include "output_format.hh"
 #include "shell_ctx.hh"
 #include "script_env.hh"
 
@@ -222,6 +223,34 @@ namespace plux
 
     private:
         std::string _output;
+    };
+
+    /**
+     * % formatted output line.
+     */
+    class LineOutputFormat : public Line {
+    public:
+	    LineOutputFormat(const std::string& file, unsigned int line,
+                         const std::string& shell, const std::string& fmt,
+                         const OutputFormat::string_vector args)
+            : Line(file, line, shell),
+              _fmt(fmt),
+              _args(args)
+        {
+        }
+        virtual ~LineOutputFormat() { }
+
+        const std::string& fmt() const { return _fmt; }
+        void set_fmt(const std::string& fmt) { _fmt = fmt; }
+        const OutputFormat::string_vector& args() const { return _args; }
+        void set_args(const OutputFormat::string_vector& args) { _args = args; }
+
+        virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
+        virtual std::string to_string() const override;
+
+    private:
+        std::string _fmt;
+        OutputFormat::string_vector _args;
     };
 
     /**

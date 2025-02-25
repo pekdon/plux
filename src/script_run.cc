@@ -225,7 +225,7 @@ namespace plux
     {
         for (; it != end; ++it) {
             try {
-                auto res = run_line(*it);
+                ScriptResult res = run_line(*it);
                 if (res.status() != RES_OK) {
                     return res;
                 }
@@ -598,6 +598,10 @@ namespace plux
         }
         if (info.empty()) {
             info = line->to_string();
+        }
+        if (! res.error().empty()) {
+            info += ": ";
+            info += res.error();
         }
 
         std::vector<std::string> stack;

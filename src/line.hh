@@ -42,7 +42,9 @@ namespace plux
         }
         ~LineRes(void) { }
 
-        enum line_status status(void) const { return _status; }
+        enum line_status status() const { return _status; }
+        const std::string& error() const { return _error; }
+        void set_error(const std::string& error) { _error = error; }
 
         bool operator==(enum line_status status) const {
             return _status == status;
@@ -55,6 +57,7 @@ namespace plux
 
     private:
         enum line_status _status;
+        std::string _error;
         FunctionArgs _fargs;
     };
 

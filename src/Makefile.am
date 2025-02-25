@@ -7,6 +7,7 @@ plux_SOURCES = \
     line.cc line.hh \
     log.cc log.hh \
     main.cc \
+    output_format.cc output_format.hh \
     os.cc os.hh \
     plux.cc plux.hh \
     process.cc process.hh \

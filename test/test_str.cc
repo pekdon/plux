@@ -19,7 +19,7 @@ public:
     {
         std::vector<std::string> toks;
         ASSERT_EQUAL("num elements",
-                     3, plux::str_split("one two three", toks));
+                     3, plux::str_split("one two three", 0, toks));
         ASSERT_EQUAL("mismatch", "one", toks[0]);
         ASSERT_EQUAL("mismatch", "two", toks[1]);
         ASSERT_EQUAL("mismatch", "three", toks[2]);

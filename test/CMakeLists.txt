@@ -69,3 +69,5 @@ set_target_properties(test_util PROPERTIES
   CXX_STANDARD_REQUIRED ON)
 target_include_directories(test_util PUBLIC ${common_INCLUDE_DIRS})
 target_link_libraries(test_util libplux ${common_LIBRARIRES})
+
+add_subdirectory(system)
