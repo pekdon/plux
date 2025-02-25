@@ -4,4 +4,4 @@ file(GLOB pluxinc_files "${CMAKE_CURRENT_SOURCE_DIR}/*.pluxinc")
 
 install(FILES
 	${pluxinc_files}
-	DESTINATION "${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/plux/stdlib")
+	DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/plux/stdlib")

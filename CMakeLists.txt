@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS ${orig_CMAKE_CXX_FLAGS})
 find_program(SH sh /usr/xpg4/bin/sh /bin/sh /usr/xpg4/bin)
 
 add_definitions(-DSH="${SH}")
-add_definitions(-DPLUX_STDLIB_PATH="${CMAKE_INSTALL_FULL_SHAREDSTATEDIR}/plux/stdlib")
+add_definitions(-DPLUX_STDLIB_PATH="${CMAKE_INSTALL_FULL_DATADIR}/plux/stdlib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH True)
 
 option(PEDANTIC "turn on strict compile-time warnings" OFF)
