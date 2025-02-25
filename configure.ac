@@ -4,6 +4,7 @@ AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 AC_PROG_SED
 
 dnl Check for /usr/xpg4/bin/sh and use if available to make shipped scripts
@@ -37,11 +38,18 @@ fi
 AC_CHECK_FUNC(setenv, [AC_DEFINE([HAVE_SETENV], [1],
 				 [Define to 1 if setenv is available])])
 
+AC_ARG_ENABLE([pedantic], [Enable pedantic compiler flags],
+	      [CXXFLAGS="$CXXFLAGS -Wall -Werror -pedantic"], [])
+AC_ARG_ENABLE([tests], [Enable building of tests],
+	      [ENABLE_TESTS=yes], [ENABLE_TESTS=no])
+AM_CONDITIONAL([TESTS], [test "x$ENABLE_TESTS" = "xyes"])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 stdlib/Makefile
-		 test/Makefile])
+		 test/Makefile
+		 test/system/Makefile])
 AC_CONFIG_FILES([stdlib/gen_stdlib_builtins.sh],
 		[chmod +x stdlib/gen_stdlib_builtins.sh])
 

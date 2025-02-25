@@ -1,12 +1,11 @@
-bin_PROGRAMS = plux
-plux_SOURCES = \
+noinst_LIBRARIES = libplux_lib.a
+libplux_lib_a_SOURCES = \
     cfg.cc cfg.hh \
     compat.h \
     forkpty.cc \
     function.hh \
     line.cc line.hh \
     log.cc log.hh \
-    main.cc \
     output_format.cc output_format.hh \
     os.cc os.hh \
     plux.cc plux.hh \
@@ -23,6 +22,10 @@ plux_SOURCES = \
     shell_log.cc shell_log.hh \
     str.cc str.hh \
     timeout.cc timeout.hh
-plux_CXXFLAGS = -I../stdlib
+libplux_lib_a_CXXFLAGS = -I../stdlib
+
+bin_PROGRAMS = plux
+plux_SOURCES = main.cc
+plux_LDADD = libplux_lib.a
 
 EXTRA_DIST = CMakeLists.txt
