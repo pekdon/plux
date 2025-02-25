@@ -70,4 +70,12 @@ set_target_properties(test_util PROPERTIES
 target_include_directories(test_util PUBLIC ${common_INCLUDE_DIRS})
 target_link_libraries(test_util libplux ${common_LIBRARIRES})
 
+add_executable(test_regex test_regex.cc)
+add_test(regex test_regex)
+set_target_properties(test_regex PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED ON)
+target_include_directories(test_regex PUBLIC ${common_INCLUDE_DIRS})
+target_link_libraries(test_regex libplux ${common_LIBRARIRES})
+
 add_subdirectory(system)

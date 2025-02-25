@@ -25,7 +25,7 @@ private:
 };
 
 #define ASSERT_EQUAL(msg, expected, actual)                             \
-    if ((expected) != (actual)) {                                       \
+    if (! ((expected) == (actual))) {                                   \
         std::ostringstream oss;                                         \
         oss << (msg)                                                    \
             << " expected |" << (expected)                              \

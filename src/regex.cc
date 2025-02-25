@@ -46,14 +46,72 @@ namespace plux
             return;
         }
 
+        std::string ext_pattern = transform(pattern);
+
         int flags = REG_EXTENDED;
-        int err = regcomp(&_re, pattern.c_str(), flags);
+        int err = regcomp(&_re, ext_pattern.c_str(), flags);
         if (! err) {
             _compiled = true;
         } else {
             char buf[128] = {0};
             regerror(err, &_re, buf, sizeof(buf));
             throw regex_error(buf);
+        }
+    }
+
+    std::string regex::transform(const std::string& pattern)
+    {
+        std::string ext_pattern;
+        bool in_escape = false;
+        int in_group = 0;
+        for (size_t i = 0; i < pattern.size(); i++) {
+            if (in_escape) {
+                // \d works
+                switch (pattern[i]) {
+                case 'D':
+                    transform_add_group(ext_pattern, in_group, "^[:digit:]");
+                    break;
+                case 's':
+                    transform_add_group(ext_pattern, in_group, " \n\r\t");
+                    break;
+                case 'S':
+                    transform_add_group(ext_pattern, in_group, "^ \n\r\t");
+                    break;
+                case 'w':
+                    transform_add_group(ext_pattern, in_group, "[:alnum:]_");
+                    break;
+                case 'W':
+                    transform_add_group(ext_pattern, in_group, "^[:alnum:]_");
+                    break;
+                default:
+                    ext_pattern += '\\';
+                    ext_pattern += pattern[i];
+                    break;
+                }
+                in_escape = false;
+            } else if (pattern[i] == '\\') {
+                in_escape = true;
+            } else {
+                if (pattern[i] == '[') {
+                    in_group++;
+                } else if (pattern[i] == ']') {
+                    in_group--;
+                }
+                ext_pattern += pattern[i];
+            }
+        }
+        return ext_pattern;
+    }
+
+    void regex::transform_add_group(std::string &pattern, int in_group,
+                                    const char* group)
+    {
+        if (in_group > 0) {
+            pattern += group;
+        } else {
+            pattern += '[';
+            pattern += group;
+            pattern += ']';
         }
     }
 

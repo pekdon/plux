@@ -70,7 +70,7 @@ namespace plux
         regex(const regex& regex) = delete;
         ~regex(void);
 
-        bool compiled(void) const { return _compiled; }
+        bool compiled() const { return _compiled; }
         const regex_t* re(void) const { return &_re; }
         size_t nsub(void) const { return _re.re_nsub; }
 
@@ -81,9 +81,11 @@ namespace plux
 
     private:
         void set(const std::string& pattern);
-        void free(void);
+        std::string transform(const std::string& pattern);
+        void transform_add_group(std::string& pattern, int in_group,
+                                 const char* group);
+        void free();
 
-    private:
         regex_t _re;
         bool _compiled;
     };
@@ -94,3 +96,21 @@ namespace plux
     bool regex_search(const std::string& s, smatch& matches, const regex& e);
     bool regex_match(const std::string& s, const regex& e);
 }
+
+#ifndef WORKING_CXX_REGEX
+inline std::ostream& operator<<(std::ostream& ost, const plux::sub_match& sm)
+{
+    ost << sm.str();
+    return ost;
+}
+
+inline bool operator==(const std::string& lhs, const plux::sub_match& rhs)
+{
+    return lhs == rhs.str();
+}
+
+inline bool operator==(const char* lhs, const plux::sub_match& rhs)
+{
+    return rhs.str() == lhs;
+}
+#endif // WORKING_CXX_REGEX
