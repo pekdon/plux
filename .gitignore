@@ -5,6 +5,7 @@ Makefile
 Makefile.in
 .cache
 .deps
+plux.progress.log
 /aclocal.m4
 /autom4te.cache
 /build
@@ -23,3 +24,5 @@ Makefile.in
 /src/plux
 /stamp-h1
 /stdlib/stdlib_builtins.hh
+/test/plux
+/test/system/output_format_echo
