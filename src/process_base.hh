@@ -53,7 +53,6 @@ namespace plux
 
         pid_t pid() const override { return _pid; }
         virtual int wait_pid(bool wait);
-        virtual void stop() = 0;
 
         const std::string& name(void) const override { return _name; }
         void progress_log(const std::string& msg) override;

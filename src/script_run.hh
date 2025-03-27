@@ -82,7 +82,7 @@ namespace plux
         virtual void push_function(void) override;
         virtual void pop_function(void) override;
 
-        virtual void set_os_env() const;
+        void set_os_env() const override;
         virtual env_map_const_it os_begin() const override;
         virtual env_map_const_it os_end() const override;
 

@@ -30,7 +30,7 @@ public:
         _is_alive = alive;
         _exitstatus = exitstatus;
     }
-    int exitstatus() const { return _exitstatus; }
+    int exitstatus() const override { return _exitstatus; }
     int fd_input() const override { return -1; }
     int fd_output() const override { return -1; }
     void stop() override { }

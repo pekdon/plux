@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 int main(int argc, char *argv[])
 {
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
 			break;
 		case 3:
 			fread(&i64, sizeof(i64), 1, stdin);
-			fprintf(stdout, "i64=%d\n", i64);
+			fprintf(stdout, "i64=%" PRIi64 "\n", i64);
 			break;
 		case 4:
 			fread(&u8, sizeof(u8), 1, stdin);
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
 			break;
 		case 7:
 			fread(&u64, sizeof(u64), 1, stdin);
-			fprintf(stdout, "u64=%u\n", u64);
+			fprintf(stdout, "u64=%" PRIu64 "\n", u64);
 			break;
 		case 8:
 			fread(&len, sizeof(len), 1, stdin);
