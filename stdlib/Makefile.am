@@ -1,5 +1,6 @@
 stdlibdir = $(pkgdatadir)/stdlib
 stdlib_DATA = nothing.pluxinc \
+	sh-calc.pluxinc \
 	sh-eval.pluxinc \
 	sh-if.pluxinc \
 	sh-if-else.pluxinc \

@@ -1,0 +1,12 @@
+[doc]
+usage: [call sh-calc "math expression" res]
+
+Calculate expression and assign the result in res
+[enddoc]
+
+[function sh-calc expr res]
+	!echo "$expr" | bc
+	?^(\d+)$
+	[local $res=$1]
+	?SH-PROMPT:
+[endfunction]
