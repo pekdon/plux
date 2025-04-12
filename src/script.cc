@@ -21,8 +21,9 @@ namespace plux
 
     LineRes LineVarAssignGlobal::run(ShellCtx& ctx, ShellEnv& env)
     {
+        auto exp_key = expand_var(env, ctx.name(), key());
         auto exp_val = expand_var(env, ctx.name(), val());
-        env.set_env("", key(), VAR_SCOPE_GLOBAL, exp_val);
+        env.set_env("", exp_key, VAR_SCOPE_GLOBAL, exp_val);
         return LineRes(RES_OK);
     }
 
@@ -86,8 +87,9 @@ namespace plux
 
     LineRes LineVarAssignShell::run(ShellCtx& ctx, ShellEnv& env)
     {
+        auto exp_key = expand_var(env, ctx.name(), key());
         auto exp_val = expand_var(env, ctx.name(), val());
-        env.set_env(ctx.name(), key(), VAR_SCOPE_SHELL, exp_val);
+        env.set_env(ctx.name(), exp_key, VAR_SCOPE_SHELL, exp_val);
         return LineRes(RES_OK);
     }
 
