@@ -105,7 +105,24 @@ namespace plux
         }
     }
 
-    const unsigned int default_timeout_ms = 60000;
+    static unsigned int _default_timeout_ms = 60000;
+
+    /**
+     * Return the current default timeout.
+     */
+    unsigned int default_timeout_ms()
+    {
+        return _default_timeout_ms;
+    }
+
+    /**
+     * Set default timeout, for parts of scripts without [timeout] statements.
+     */
+    void set_default_timeout_ms(unsigned int timeout_ms)
+    {
+        _default_timeout_ms = timeout_ms;
+    }
+
     const std::string empty_string;
 
     const std::map<std::string, std::string> default_env = {

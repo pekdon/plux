@@ -164,7 +164,7 @@ namespace plux
           _log(log),
           _progress_log(progress_log),
           _stop(false),
-          _timeout(default_timeout_ms),
+          _timeout(plux::default_timeout_ms()),
           _env(env),
           _script_env(script->env())
     {

@@ -414,7 +414,7 @@ public:
         ASSERT_EQUAL("timeout default", true,
                      tline != nullptr);
         ASSERT_EQUAL("timeout default",
-                     plux::default_timeout_ms, tline->timeout());
+                     plux::default_timeout_ms(), tline->timeout());
         delete line;
 
         line = parse_line_cmd(ctx("[timeout 2]"));

@@ -85,6 +85,9 @@ static int usage(const char* name)
     std::cerr << "    -h --help" << std::endl;
     std::cerr << "    -l --log-level" << std::endl;
     std::cerr << "    -t --tail" << std::endl;
+    std::cerr << "    -T --timeout MS set default timeout in milliseconds"
+              << std::endl;
+    std::cerr << std::endl;
     return 1;
 }
 
@@ -246,6 +249,7 @@ int main(int argc, char *argv[])
         {"help", no_argument, nullptr, 'h'},
         {"log-level", required_argument, nullptr, 'l'},
         {"tail", no_argument, nullptr, 't'},
+        {"timeout", required_argument, nullptr, 'T'},
         {nullptr, no_argument, nullptr, '\0'}
     };
 
@@ -254,7 +258,7 @@ int main(int argc, char *argv[])
     enum plux::log_level opt_log_level = plux::LOG_LEVEL_INFO;
 
     int ch;
-    while ((ch = getopt_long(argc, argv, "dhl:t", longopts, nullptr)) != -1) {
+    while ((ch = getopt_long(argc, argv, "dhl:tT:", longopts, nullptr)) != -1) {
         switch (ch) {
         case 'd':
             opt_dump = true;
@@ -270,6 +274,14 @@ int main(int argc, char *argv[])
             break;
         case 't':
             opt_tail = true;
+            break;
+        case 'T':
+            try {
+                unsigned long timeout = std::stoul(optarg);
+                plux::set_default_timeout_ms(timeout);
+            } catch (std::invalid_argument &ex) {
+                return usage(name);
+            }
             break;
         }
     }

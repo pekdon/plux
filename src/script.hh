@@ -266,7 +266,7 @@ namespace plux
         }
 
         unsigned int timeout(void) const {
-            return _timeout_ms ? _timeout_ms : plux::default_timeout_ms;
+            return _timeout_ms ? _timeout_ms : plux::default_timeout_ms();
         }
 
         virtual LineRes run(ShellCtx& ctx, ShellEnv& env) override;
